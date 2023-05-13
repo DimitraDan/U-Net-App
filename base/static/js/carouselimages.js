@@ -61,24 +61,6 @@ function drawImage(url) {
 }
 
 function getCoordinates() {
-  // var map1 = new Map();
-  // var map2 = new Map();
-  // i=0;
-  // y=0;
-
-  // for(i ; i<all_points_x.length(); i++) {
-  //   map1.set(all_points_x[i], all_points_y[i])
-  // }
-  // for(y ; i<eraser_points_x.length(); y++) {
-  //   map2.set(eraser_points_x[y], eraser_points_y[y])
-  // }
-  
-  // for(var a of map1.entries()){
-  //   if(map2.containsKey(a) && map2.containsValue(map1.get(a))){
-  //       map1.remove(a);
-  //   }
-  // }
-
   document.getElementById('i').value = document.getElementById('image').src;
   document.getElementById('m').value = document.getElementById('mask').src;
   document.getElementById('im').value = document.getElementById('imageAndMask').src;

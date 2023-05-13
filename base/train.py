@@ -8,36 +8,9 @@ import torch.nn as nn
 from tqdm import tqdm
 from base.iou_score import *
 from pathlib import Path
-import shutil
 import wandb
 from base.evaluate import evaluate
-
-
-# Define a callback function that saves the logs to a file
-def save_logs_to_file(logs):
-    # Get the log directory
-    log_dir = wandb.run.dir
-    print(log_dir)
-
-    # Create the log file path
-    log_file = os.path.join(log_dir, 'MODEL.pth')
-
-    # Open the log file in append mode and write the logs
-    with open(log_file, 'a') as f:
-        f.write(str(logs) + '\n')
-
-
-def deleteFiles(folder):
-    for filename in os.listdir(folder):
-        file_path = os.path.join(folder, filename)
-        try:
-            if os.path.isfile(file_path) or os.path.islink(file_path):
-                os.unlink(file_path)
-            elif os.path.isdir(file_path):
-                shutil.rmtree(file_path)
-        except Exception as e:
-            print('Failed to delete %s. Reason: %s' % (file_path, e))
-
+from base.manageFolders import deleteFiles
 
 dir_img = "media/selected/image/train"
 dir_mask = "media/selected/mask/train"

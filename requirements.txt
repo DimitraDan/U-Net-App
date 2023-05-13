@@ -3,7 +3,10 @@ tqdm
 Django
 numpy
 Pillow
-opencv-python~=4.5.5.64
+opencv-python-headless
 torchvision
 Django
 torch
+psycopg2-binary
+asgiref
+sqlparse

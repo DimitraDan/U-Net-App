@@ -1,7 +1,24 @@
-version: '3.8'
+version: "3.9"
+
 services:
-   web:
-       build: .
-       command: python manage.py runserver localhost:8000
-       ports:
-           - 8000:8000
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: mydb
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+volumes:
+  db_data:
