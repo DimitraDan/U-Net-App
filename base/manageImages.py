@@ -1,12 +1,15 @@
-from base.models import *
-import os, io
-from io import BytesIO
-from base64 import b64encode
-from PIL import Image as PIL_Image
-import cv2
 import base64
+import io
+import os
+from base64 import b64encode
+from io import BytesIO
+
+import cv2
 import numpy as np
+from PIL import Image as PIL_Image
 from django.core.files.base import ContentFile
+
+from base.models import *
 
 
 def readb64(encoded_image):

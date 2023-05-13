@@ -1,7 +1,28 @@
-version: '3.8'
+version: "3.9"
+
 services:
-   web:
-       build: .
-       command: python manage.py runserver localhost:8000
-       ports:
-           - 8000:8000
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: mydb
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    command: >
+      bash -c "
+        until psql -U postgres -c 'SELECT 1' &> /dev/null;
+        do
+          echo 'Waiting for PostgreSQL to start...';
+          sleep 1;
+        done;
+        psql -U postgres -c 'CREATE DATABASE mydb'";
+  app:
+    build:
+      context: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+volumes:
+  db_data:

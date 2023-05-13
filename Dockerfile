@@ -1,11 +1,17 @@
-#Tells Docker to use the official python 3 image from dockerhub as a base image
-FROM python:3
-# Sets an environmental variable that ensures output from python is sent straight to the terminal without buffering it first
+# Pull base image
+FROM python:3.10.2-slim-bullseye
+
+# Set environment variables
+ENV PIP_DISABLE_PIP_VERSION_CHECK 1
+ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
-# Sets the container's working directory to /app
-WORKDIR /app
-# Copies all files from our local project into the container
-ADD . /app
-RUN pip install --upgrade pip
-# runs the pip install command for all packages listed in the requirements.txt file
+
+# Set work directory
+WORKDIR /code
+
+# Install dependencies
+COPY ./requirements.txt .
 RUN pip install -r requirements.txt
+
+# Copy project
+COPY . .
