@@ -1,0 +1,24 @@
+# Compiled files
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+
+# Log files
+*.log
+
+# Environment and build files
+.myvenv
+build/
+node_modules/
+/dist/
+
+# Dependencies
+myvenv/
+node_modules/
+
+# Other
+*.DS_Store
+*.idea/
+*.pyc
+wandb

@@ -1,0 +1,111 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/editDoctor.css' %}">
+    <link rel="stylesheet" href="{% static 'css/pageLoad.css' %}">
+    <script src="{% static 'js/pageLoad.js' %}"></script>
+    <script src="{% static 'js/sideNav.js' %}"></script>
+    <script src="{% static 'js/darkMode.js' %}"></script>
+    <meta charset="UTF-8">
+    <title>Admin Base</title>
+  </head>
+  <body>
+    <script>
+      var app = document.getElementsByTagName("BODY")[0];
+      if (localStorage.lightMode == "dark") {
+        app.setAttribute("light-mode", "dark");
+      }
+    </script>
+  <!-- SideNav -->
+    <div id="leftWrapper">
+      <div id="listView" class="list">
+        <li class="list-item-active"><a href="#">Home</a></li>
+        <li><a href="/trainModel">Train</a></li>
+        <li><a href="/modifyDoctors">Users</a></li>
+        <li><a href="/modifyImages">Images</a></li>
+        <li><a href="/">Logout</a></li>
+        <li style="position: absolute; top: 100%; height: 150px;">
+          <button class="light-mode-button" aria-label="Toggle Light Mode" onclick="toggle_light_mode()">
+            <span></span>
+            <span></span>
+          </button>
+        </li>
+      </div>
+    </div>
+    <!-- End of SiveNav -->
+
+    <!-- Put content in center -->
+    <div class="container" >
+      <div class="row profile">
+        <div class="col-md-3">
+          <div class="profile-sidebar">
+            <!-- SIDEBAR USERPIC -->
+            <div class="profile-userpic">
+              <!-- <img src="http://keenthemes.com/preview/metronic/theme/assets/admin/pages/media/profile/profile_user.jpg" class="img-responsive" alt=""> -->
+            </div>
+            <!-- END SIDEBAR USERPIC -->
+            <!-- SIDEBAR USER TITLE -->
+            <div class="profile-usertitle">
+              <div class="profile-usertitle-name">
+                <span class="hidden-xs">{{doctor.user.username}}</span>
+              </div>
+              <div class="profile-usertitle-job">{{doctor.user.user_type}}</div>
+            </div>
+            <div class="portlet light bordered">
+              <!-- STAT -->
+              <div class="row list-separated profile-stat">
+                <div class="col-md-4 col-sm-4 col-xs-6">
+                  <div class="uppercase profile-stat-title"> 37 </div>
+                  <div class="uppercase profile-stat-text"> Projects </div>
+                </div>
+                <div class="col-md-4 col-sm-4 col-xs-6">
+                  <div class="uppercase profile-stat-title"> 51 </div>
+                  <div class="uppercase profile-stat-text"> Tasks </div>
+                </div>
+                <div class="col-md-4 col-sm-4 col-xs-6">
+                  <div class="uppercase profile-stat-title"> 61 </div>
+                  <div class="uppercase profile-stat-text"> Uploads </div>
+                </div>
+              </div>
+              <!-- END STAT -->
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="form_main col-md-4 col-sm-5 col-xs-7">
+            <h4 class="heading">
+              <strong>Personal </strong> Contact <span></span>
+            </h4>
+            <div class="form" >
+              <form action="/edit_doctor_save" method="post" id="contactFrm" name="contactFrm">
+                {% csrf_token %}
+
+                <input type="text" required placeholder="username" value="" name="username" class="txt">               
+                <input type="text" required placeholder="email" value="" name="email" class="txt">
+                <input hidden type="text"  placeholder="user_id" value={{doctor.user.id}} name="user_id" class="txt">               
+                <input type="password" required placeholder="Change Pwd" value="" name="password" class="txt">
+                <br>
+                <button type="submit" >Update</button>
+              </form>
+              <div class="form-group">
+                {% if messages %}
+                  {% for message in messages %}
+                  {% if message.tags == 'error' %}
+                  <div class="alert alert-danger" style="margin-top:10px">{{ message }}</div>
+                  {% endif %}
+                  {% if message.tags == 'success' %}
+                  <div class="alert alert-success" style="margin-top:10px">{{ message }}</div>
+                  {% endif %}
+                  {% endfor %}
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- end center -->
+  </body>
+</html>

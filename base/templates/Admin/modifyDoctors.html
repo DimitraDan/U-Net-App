@@ -1,0 +1,120 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <link rel="stylesheet" href="{% static 'css/modifyDoctors.css' %}">
+  <link rel="stylesheet" href="{% static 'css/pageLoad.css' %}">
+  <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css" />
+  <meta charset="UTF-8">
+  <title>User list</title>
+</head>
+
+<body>
+  <script>
+    var app = document.getElementsByTagName("BODY")[0];
+    if (localStorage.lightMode == "dark") {
+      app.setAttribute("light-mode", "dark");
+    }
+  </script>
+  <!-- sideBar -->
+  <div id="wrapper">
+    <div id="leftWrapper">
+      <div id="listView" class="list">
+        <li><a href="#">Home</a></li>
+        <li><a href="/trainModel">Train</a></li>
+        <li><a href="/modifyDoctors">Users</a></li>
+        <li><a href="/modifyImages">Images</a></li>
+        <li><a href="/">Logout</a></li>
+        <li style="position: absolute; top: 100%; height: 150px;">
+          <button class="light-mode-button" aria-label="Toggle Light Mode" onclick="toggle_light_mode()">
+            <span></span>
+            <span></span>
+          </button>
+        </li>
+      </div>
+    </div>
+    <!-- end of sideBar -->
+
+
+    <!--  content -->
+    <div id="rightWrapper">
+      <div id="header">
+        <a id="fullPage" href="#">|||</a>
+      </div>
+      <div id="contentWrapper">
+        <button class="open-button" onclick="openForm()">Add User</button>
+        <div class="form-popup" id="myForm">
+          <form action="/doSignUp" method="post" class="form-container">
+            {% csrf_token %}
+
+            <h1>Add User</h1>
+            <input name='username' id="username" type="text" placeholder="Username" required>
+            <input name="lastname" id="lastname" type="text" placeholder="Lastname" required>
+            <input name="birthday" data-date-format="YYYY-MM-DD" id="birthday" type="date" placeholder="Birthday"
+              required>
+            <input name="email" id="email" type="email" placeholder="Email" required>
+            <input name="password" type="password" placeholder="Password" required>
+            <input name="role" type="number" max="2" min="0" placeholder="Role" required>
+            <button type="submit" name="submitImage" class="btn">Submit</button>
+            <button type="button" class="btn cancel" onclick="closeForm()">Close</button>
+          </form>
+        </div>
+
+        <!-- filter Items -->
+        <form>
+          <table id="table">
+            <thead>
+              <tr>
+                <th>Id</th>
+                <th>First name</th>
+                <th>Last name</th>
+                <th>Email</th>
+                <th>Date joined</th>
+                <th>Role</th>
+                <th class="no-sort">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for user in users %}
+              <tr>
+                <td>{{user.id}}</td>
+                <td>{{user.first_name}}</td>
+                <td>{{user.last_name}}</td>
+                <td>{{user.email}}</td>
+                <td>{{user.date_joined}}</td>
+                <td>{{user.user_type}}</td>
+                <td>
+                  <a href="delete_doctor/{{ user.id }}" >Delete</a>
+                  <a href="editDoctor/{{ user.id }}" >Edit</a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </form>
+        <script>
+          $(document).ready(function () {
+            $('#table').DataTable({
+              "paging": true,
+              "lengthMenu": [[5, 10, 25, 50, -1], [5, 10, 25, 50, "All"]],
+              "searching": true,
+              "info": true,
+              columnDefs: [
+                { "orderable": false, "targets": 'no-sort' }
+              ]
+            });
+          });
+        </script>
+      </div>
+      <!-- end center -->
+      <script type="text/javascript" src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+      <script src="{% static '/js/darkMode.js' %}"></script>
+      <script src="{% static '/js/modifyDoctors.js' %}"></script>
+      <script src="{% static '/js/sideNav.js' %}"></script>
+      <script src="{% static '/js/pageLoad.js' %}"></script>
+</body>
+
+</html>

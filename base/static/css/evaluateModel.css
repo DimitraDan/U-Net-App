@@ -1,0 +1,271 @@
+#wrap {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: stretch;
+	margin: 0 20%;
+}
+
+.hb {
+	position: relative;
+	width: 30%;
+	z-index: 1;
+	display: flex;
+	align-items: center;
+	z-index: 2;
+	transform: scale(.97);
+}
+
+.c {
+	position: relative;
+	display: block;
+	max-width: 85%;
+	padding-left: 60px;
+}
+
+.c img {
+	position: relative;
+	display: block;
+	width: 100%;
+	height: auto;
+	z-index: 2;
+	min-width: 200px;
+	min-height: 200px;
+}
+.txt {
+	position: absolute;
+	top: 100%;
+	left: 15%;
+	width: 90%;
+	opacity: 0;
+	padding: 2em 0 0 1em;
+	border-left: 1px solid;
+	z-index: 1;
+	transform: scaleY(1) translateY(-50px);
+	transition: transform .5s, opacity .5s;
+	color: #292a2b;
+
+}
+
+body[light-mode="dark"] .txt {
+	color: #d6d7db;
+}
+
+h1 {
+	font-size: 1.2em;
+	font-weight: 700;
+	text-transform: uppercase;
+}
+
+.hb:hover .txt {
+	opacity: 1;
+	transform: scaleY(1) translateY(0);
+}
+
+.fullBg {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	opacity: 0;
+	transition: transform .5s, opacity .5s;
+}
+
+.fullBg img {
+	position: relative;
+	left: 30%;
+	bottom: 20px;
+	width: 60%;
+	height: 60%;
+	object-fit: cover;
+	object-position: center;
+	opacity: .5;
+}
+
+.hb:hover+.fullBg {
+	opacity: 1;
+	transform: scale(1.02);
+}
+
+
+/* Define styles for the form */
+form {
+    width: 80%;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+
+
+  
+  label {
+    display: block;
+    margin-bottom: 10px;
+  }
+  
+  input[type="file"] {
+    margin-bottom: 10px;
+  }
+  
+  button[type="submit"] {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 30px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  button[type="submit"]:hover {
+    background-color: #0062cc;
+  }
+
+  input[type="button"] {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 30px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  input[type="button"]:hover {
+    background-color: #0062cc;
+  }
+
+.container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    margin: 50px;
+}
+
+.image-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 10px;
+}
+
+.image {
+    max-width: 200px;
+    max-height: 200px;
+    margin-bottom: 10px;
+}
+
+.prediction {
+    font-weight: bold;
+    text-align: center;
+}
+
+.switch-wrapper {
+	width: 100%;
+	max-width: 300px;
+	margin-left: 0;
+	margin-right: 0;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 20px;
+}
+
+.label-container p {
+	font-size: 16px;
+	font-weight: 400;
+	color: #000;
+	font-family: 'Ubuntu', sans-serif;
+}
+
+.switch-container {
+	width: 100%;
+	max-width: 60px;
+	max-height: 30px;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
+	padding: 5px 8px;
+	border-radius: 50px;
+	position: relative;
+	cursor: pointer;
+	overflow: hidden;
+}
+
+.switch-container .switch-bg {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	left: 0;
+	top: 0;
+	background-color: #949494;
+	z-index: -1;
+	transition: background-color 0.2s ease-in;
+}
+
+.switch-container #with-warrenty:checked ~ .switch-bg {
+	background-color: #007bff;
+}
+
+.switch-container .switch-left span {
+	font-size: 11px;
+	font-weight: 700;
+	color: #ffffff;
+	font-family: 'Ubuntu', sans-serif;
+	line-height: 1;
+	opacity: 0;
+	transition: opacity 0.3s ease-in-out;
+}
+
+
+/* Switch */
+* {
+	box-sizing: border-box;
+}
+
+ .switch-container .switch-right span {
+	font-size: 11px;
+	font-weight: 1000;
+	color: #ffffff;
+	font-family: 'Ubuntu', sans-serif;
+	line-height: 1;
+	opacity: 1;
+	transition: opacity 0.3s ease-in-out;
+}
+
+
+.switch-container .round-box {
+	position: absolute;
+    top: 50%;
+	width: 22px;
+	height: 22px;
+	transform: translate(-3px, -50%);
+	background-color: #f6f6f6;
+	box-shadow: 0 2px 3px rgb(0 0 0 / 15%);
+	border-radius: 50%;
+	transition: transform 0.3s ease-in-out;
+}
+
+
+.ms-container {
+  background: #fff;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+#css-dropdown
+{
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    width: 300px;
+    height: 42px;
+    margin: 100px auto 0 auto;
+}

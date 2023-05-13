@@ -1,0 +1,9 @@
+wandb
+tqdm
+Django
+numpy
+Pillow
+opencv-python~=4.5.5.64
+torchvision
+Django
+torch

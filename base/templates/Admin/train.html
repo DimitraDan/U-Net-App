@@ -1,0 +1,107 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <meta charset="UTF-8">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+   <link rel="stylesheet" href="{% static 'css/train.css' %}">
+   <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+   <link rel="stylesheet" href="{% static 'css/pageLoad.css' %}">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Train Model</title>
+</head>
+
+<body>
+   <script>
+      var app = document.getElementsByTagName("BODY")[0];
+      if (localStorage.lightMode == "dark") {
+         app.setAttribute("light-mode", "dark");
+      }
+   </script>
+  <!-- sideBar -->
+  <div id="wrapper">
+   <div id="leftWrapper">
+     <div id="listView" class="list">
+       <li><a href="#">Home</a></li>
+       <li><a href="/trainModel">Train</a></li>
+       <li><a href="/modifyDoctors">Users</a></li>
+       <li><a href="/modifyImages">Images</a></li>
+       <li><a href="/">Logout</a></li>
+       <li style="position: absolute; top: 100%; height: 150px;">
+         <button class="light-mode-button" aria-label="Toggle Light Mode" onclick="toggle_light_mode()">
+           <span></span>
+           <span></span>
+         </button>
+       </li>
+     </div>
+   </div>
+   <!-- end of sideBar -->
+
+    <!-- Content -->
+    <div id="rightWrapper">
+      <div id="header">
+        <a id="fullPage" href="#">|||</a>
+      </div>
+      <div id="contentWrapper">
+      <table id="run-table">
+         <thead>
+            <tr>
+               <th>Run's name</th>
+               <th>Created data</th>
+            </tr>
+         </thead>
+         <tbody>
+            {% for run in runs %}
+            <tr>
+               <td>
+                  <a href="{% url 'train_results' run.id %}">{{run.name}}</a>
+               </td>
+               <td>
+                  {{run.created_at}}
+               </td>
+            </tr>
+            {% endfor %}
+         </tbody>
+      </table>
+      <br>
+      <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+      <script src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.min.js"></script>
+      <link rel="stylesheet" href="https://cdn.datatables.net/1.11.4/css/jquery.dataTables.min.css">
+
+      <script>
+         $(document).ready(function () {
+            $('#run-table').DataTable({
+               "paging": true,
+               "searching": true,
+               "lengthMenu": [[5, 10, 25, 50, -1], [5, 10, 25, 50, "All"]],
+               "info": true,
+            });
+         });
+      </script>
+
+      <form method="post" id="selectedForm" action="/train_selected">
+         {% csrf_token %}
+         <select name="selection" multiple data-multi-select-plugin>
+            {% for image in trainImages %}
+            <option value="{{ image.images.name  }}">{{ image.images.name }}</option>
+            {% endfor %}
+            {% for report in reportImages %}
+            <option value="{{ report.images.name  }}">{{ report.images.name }}</option>
+            {% endfor %}
+         </select>
+         <br>
+         <button type="submit" name="train" value="train">Train</button>
+      </form>
+
+   </div>
+
+   <script src="{% static '/js/sideNav.js' %}"></script>
+   <script src="{% static '/js/darkMode.js' %}"></script>
+   <script src="{% static '/js/pageLoad.js' %}"></script>
+   <script src="{% static '/js/train.js' %}"></script>
+
+</body>
+
+</html>

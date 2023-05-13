@@ -1,0 +1,136 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/patients.css' %}">
+    <meta charset="UTF-8">
+    <title>Doctor home</title>
+    <style media="screen">
+      .boxIcon p {
+        font-size: 0.8em;
+        line-height: 1.8em;
+      }
+
+      :root {
+        --bg-color: #1a1a1b;
+        --primary-color: #006ce0;
+        --border-radius: 6px;
+        --color: #2b82df;
+        /* --box-shadow: #0b488a 5px 0px 50px 0px; */
+      }
+
+      .box p {
+        font-size: 1.2em;
+        color: #fff;
+        margin: 0.3em 0em;
+      }
+
+      .box {
+        width: 20;
+        height: 30;
+        border: 1px solid blue;
+        box-sizing: border-box;
+        text-align: center;
+        line-height: 1.7em;
+        background: var(--primary-color);
+        border-bottom-left-radius: var(--border-radius);
+        border-top-left-radius: var(--border-radius);
+        box-shadow: rgba(107, 136, 173, 0.918) 0px 2px 10px 0px;
+      }
+    </style>
+  </head>
+  <body> 
+    <script>
+      var app = document.getElementsByTagName("BODY")[0];
+      if (localStorage.lightMode == "dark") {
+        app.setAttribute("light-mode", "dark");
+      }
+    </script>
+    <!-- User List -->
+    <div class="container" style="position: absolute; right: 20%;">
+        <table>
+            <caption>Patient List</caption>
+            <thead>
+              <tr>
+                <th scope="col">Id</th>
+                <th scope="col">First name</th>
+                <th scope="col">Last name</th>
+                <th scope="col">Email</th>
+                <th scope="col">Action</th>                
+              </tr>
+            </thead>
+            <tbody>
+              {% for patient in patients %}
+              <tr>
+                <td scope="row">{{patient.id}}</td>
+                <td>{{patient.user.first_name}}</td>
+                <td>{{patient.user.last_name}}</td>
+                <td>{{patient.user.email}}</td>
+                <td><button class="box">View</button>
+				          	<button class="box">Delete</button>	
+                    <button class="box">Edit</button>	
+                </td>              
+               </tr>
+               {% endfor %}
+            </tbody>
+          </table>
+    </div>
+    <!-- End user list -->
+ 
+
+      <!-- sideBar -->
+      <nav class="menu" tabindex="0">
+        <div class="smartphone-menu-trigger"></div>
+        <ul class="links">
+          <li class="link">
+            <svg tabindex="0" xmlns="http://www.w3.org/2000/svg" width="25" height="25" color="white" fill="currentColor" class="bi bi-house" viewBox="0 0 16 16">
+              <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.707 1.5ZM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5 5 5Z" />
+            </svg>
+            <a href="/doctorHome" >
+              <span class="icon">Home</span>
+            </a>
+          </li>
+          <li class="link active">
+            <svg tabindex="0" xmlns="http://www.w3.org/2000/svg" color="white" width="25" height="25" fill="currentColor" class="bi bi-people" viewBox="0 0 16 16">
+              <path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1h8Zm-7.978-1A.261.261 0 0 1 7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002a.274.274 0 0 1-.014.002H7.022ZM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM6.936 9.28a5.88 5.88 0 0 0-1.23-.247A7.35 7.35 0 0 0 5 9c-4 0-5 3-5 4 0 .667.333 1 1 1h4.216A2.238 2.238 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816ZM4.92 10A5.493 5.493 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275ZM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0Zm3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z" />
+            </svg>
+            <a href="/Patients">
+              <span class="icon">Users</span>
+            </a>
+          </li>
+          <li class="link">
+            <svg tabindex="0" xmlns="http://www.w3.org/2000/svg" color="white" width="25" height="25" fill="currentColor" class="bi bi-activity" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M6 2a.5.5 0 0 1 .47.33L10 12.036l1.53-4.208A.5.5 0 0 1 12 7.5h3.5a.5.5 0 0 1 0 1h-3.15l-1.88 5.17a.5.5 0 0 1-.94 0L6 3.964 4.47 8.171A.5.5 0 0 1 4 8.5H.5a.5.5 0 0 1 0-1h3.15l1.88-5.17A.5.5 0 0 1 6 2Z" />
+            </svg>
+            <a href="/Segmentation">
+              <span class="icon">Segmentation</span>
+            </a>
+          </li>
+          <li class="link">
+            <svg xmlns="http://www.w3.org/2000/svg" color="white" width="25" height="25" fill="currentColor" class="bi bi-box-arrow-left" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5v-2a.5.5 0 0 1 1 0v2z" />
+              <path fill-rule="evenodd" d="M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3z" />
+            </svg>
+            <a href="/">
+              <span class="icon">Logout</span>
+            </a>
+          </li>
+          <li style="position: absolute;bottom:0; height: 150px;">
+            <button class="light-mode-button" aria-label="Toggle Light Mode" onclick="toggle_light_mode()">
+              <span></span>
+              <span></span>
+            </button>
+          </li>
+        </ul>
+      </div>
+      </nav>
+    </div>
+    <!-- end of sideBar -->
+
+
+    <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script src="static/js/darkMode.js"></script>
+    <script src="static/js/sideNav.js"></script>
+  </body>
+</html>

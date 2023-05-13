@@ -1,0 +1,196 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+   <link rel="stylesheet" href="{% static 'css/evaluateModel.css' %}">
+  <link rel="stylesheet" href="{% static 'css/pageLoad.css' %}">
+   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
+   <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+   <meta charset="UTF-8">
+   <title>Admin Base</title>
+</head>
+
+<body>
+   <script>
+      var app = document.getElementsByTagName("BODY")[0];
+      if (localStorage.lightMode == "dark") {
+         app.setAttribute("light-mode", "dark");
+      }
+
+   </script>
+   <!-- SideNav -->
+   <div id="wrapper">
+      <div id="leftWrapper">
+         <div id="listView" class="list">
+            <li class="list-item-active"><a href="#">Home</a></li>
+            <li><a href="/trainModel">Train</a></li>
+            <li><a href="/modifyDoctors">Users</a></li>
+            <li><a href="/modifyImages">Images</a></li>
+            <li><a href="/">Logout</a></li>
+            <li style="position: absolute; top: 100%; height: 150px;">
+               <button class="light-mode-button" aria-label="Toggle Light Mode" onclick="toggle_light_mode()">
+                  <span></span>
+                  <span></span>
+               </button>
+            </li>
+         </div>
+      </div>
+      <!-- End of SiveNav -->
+
+
+    <!-- Put content in center -->
+
+    <div id="rightWrapper">
+      <div id="header">
+        <a id="fullPage" href="#">|||</a>
+      </div>
+      <div id="contentWrapper">
+            <form method="post" action="/report" enctype='multipart/form-data'>
+               {% csrf_token %}
+               <div id="wrap">
+                  <a href="#/" class="hb">
+                     <div class="c">
+                        <img
+                           src="https://wallpaperaccess.com/full/1129018.jpg"
+                           alt="" />
+                        <div id="trainForm" class="txt">
+                           <h1>Train</h1>
+                           <p>Improve your model by training it with the evaluation images and reports.</p>
+                           <form method="post" id="selectedForm" action="/train_evaluated">
+                              <input type="hidden" name="checkpoint" value={{ checkpoint }}>
+                              <label for="selected">There are available {{size}} image/s for training. Select:</label>
+                              <select id="choices-multiple-remove-button" name="selection" multiple>
+                                 {% for result in evaluation %}
+                                 <option value="{{ result }}">Image {{forloop.counter}}</option>
+                                 {% endfor %}
+                                 {% for result in updated_evaluation %}
+                                 <option value="{{ result }}">Report {{ forloop.counter }}</option>
+                                 {% endfor %}
+                              </select>
+                              <button formaction="/train_evaluated" type="submit" name="train" value="train">Train</button>
+                           </form>
+                        </div>
+                     </div>
+                  </a>
+                  <div class="fullBg">
+                     <img
+                        src="https://wallpaperaccess.com/full/1129018.jpg"
+                        alt="" />
+                  </div>
+                  {% for item in evaluation %}
+                  <a href="#/" class="hb">
+                     <div class="c">
+                        <img name="image{{ forloop.counter }}" id="image{{ forloop.counter }}" src="{{item.image}}"
+                           alt="" />
+                        <div class="txt">
+                           <h1>Image {{forloop.counter}}</h1>
+                           <p></p>
+                        </div>
+                     </div>
+                  </a>
+                  <div class="fullBg">
+                     <img src="{{item.image}}" alt="" />
+                  </div>
+                  <a href="#/" class="hb">
+                     <div class="c">
+                        <img id="prediction{{ forloop.counter }}" name="prediction{{ forloop.counter }}"
+                           src="{{item.prediction}}" alt="" />
+                        <div class="txt">
+                           <h1>Predicted Image {{forloop.counter}}</h1>
+                           <div class="switch-wrapper">
+                              <div class="label-container">
+                                 <p>Save Report</p>
+                              </div>
+                              <label for="with-warrenty{{ forloop.counter }}" class="switch-container">
+                                 <input onchange="toggleSwitch(this)" value="YES" hidden type="checkbox"
+                                    id="with-warranty{{ forloop.counter }}" name="{{ forloop.counter }}" />
+                                 <div class="switch-bg"></div>
+                                 <div class="round-box"></div>
+                                 <div class="switch-left">
+                                    <span>YES</span>
+                                 </div>
+                                 <div class="switch-right">
+                                    <span>NO</span>
+                                 </div>
+                              </label>
+                           </div>
+                           <button type="submit" name=report value="report">Send Report</button>
+                           <input type="button" value="Paint" id="paint-button{{ forloop.counter }}"
+                              onclick="drawImage('{{item.image}}','{{ forloop.counter }}');">
+                           <div class="row">
+                              {% if messages %}
+                              <div class="col-12">
+                                 {% for message in messages %} {% if message.tags == 'error' %}
+                                 <div class="alert alert-danger" style="margin-top:10px">{{ message }}</div>
+                                 {% endif %} {% endfor %}
+                              </div>
+                              {% endif %}
+                           </div>
+                           <div style="padding-top: 200px; position: absolute;">
+                              <canvas ondblclick="fullscreen('canvas{{ forloop.counter }}')"
+                                 id="canvas{{ forloop.counter }}"></canvas>
+                              <input hidden type="text" id="x_points{{forloop.counter}}"
+                                 name="x_points{{forloop.counter}}">
+                              <input hidden type="text" id="y_points{{forloop.counter}}"
+                                 name="y_points{{forloop.counter}}">
+                              <input hidden type="text" name="image{{forloop.counter}}" value="{{item.image}}">
+                              <input hidden type="text" name="prediction{{forloop.counter}}"
+                                 value="{{item.prediction}}">
+                              <input hidden type="text" id="counter" name="counter" value="{{forloop.counter}}">
+                           </div>
+                        </div>
+                     </div>
+                  </a>
+                  <div class="fullBg">
+                     <img src="{{item.prediction}}" alt="" />
+                  </div>
+                  {% endfor %}
+                  {% for item in updated_evaluation %}
+                  <a href="#/" class="hb">
+                     <div class="c">
+                        <img name="updated_image{{ forloop.counter }}" id="updated_image{{ forloop.counter }}"
+                           src="{{item.image}}" alt="" />
+                        <div class="txt">
+                           <h1>Image {{forloop.counter}}</h1>
+                           <p></p>
+                        </div>
+                     </div>
+                  </a>
+                  <div class="fullBg">
+                     <img src="{{item.image}}" alt="" />
+                  </div>
+                  <a href="#/" class="hb">
+                     <div class="c">
+                        <img id="updated_prediction{{ forloop.counter }}" name="updated_prediction{{ forloop.counter }}"
+                           src="{{item.prediction}}" alt="" />
+                        <div class="txt">
+                           <h1>Updated Predicted Image {{forloop.counter}}</h1>
+                           <p></p>
+                        </div>
+                     </div>
+                  </a>
+                  <div class="fullBg">
+                     <img src="{{item.prediction}}" alt="" />
+                  </div>
+                      <input hidden type="text" id="updated_prediction_mask{{forloop.counter}}"
+                                 name="updated_prediction_mask{{forloop.counter}}" value={{ item.prediction }}>
+                      <input hidden type="text" name="updated_prediction_img{{forloop.counter}}"
+                                 value="{{item.image}}">
+                      <input hidden type="text" id="counter_updated" name="counter_updated" value="{{forloop.counter}}">
+                  {% endfor %}
+            </form>
+         </div>
+      </div>
+     </div>
+   </div>
+   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+   <script src="{% static '/js/pageLoad.js' %}"></script>
+   <script src="{% static '/js/evaluateModel.js' %}"></script>
+   <script src="{% static '/js/darkMode.js' %}"></script>
+   <script src="{% static '/js/sideNav.js' %}"></script>
+   <script src="{% static '/js/pageLoad.js' %}"></script>
+</body>
+
+</html>
