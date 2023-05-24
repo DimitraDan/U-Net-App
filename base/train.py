@@ -12,9 +12,9 @@ import wandb
 from base.evaluate import evaluate
 from base.manageFolders import deleteFiles
 
-dir_img = "media/selected/image/train"
-dir_mask = "media/selected/mask/train"
-dir_checkpoint = "base/checkpoints"
+dir_img = "media/selected/image/train/"
+dir_mask = "media/selected/mask/train/"
+dir_checkpoint = "base/checkpoints/"
 
 
 def train_model(
@@ -37,7 +37,7 @@ def train_model(
     except (AssertionError, RuntimeError, IndexError):
         dataset = BasicDataset(dir_img, dir_mask, img_scale)
 
-    # 2. Split into train / validation partitions
+    # 2. Split into selected / validation partitions
     n_val = int(len(dataset) * val_percent)
     n_train = len(dataset) - n_val
     train_set, val_set = random_split(dataset, [n_train, n_val], generator=torch.Generator().manual_seed(0))
@@ -133,14 +133,6 @@ def train_model(
                 division_step = (n_train // (5 * batch_size))
                 if division_step > 0:
                     if global_step % division_step == 0:
-                        histograms = {}
-                        for tag, value in model.named_parameters():
-                            tag = tag.replace('/', '.')
-                            if not torch.isinf(value).any():
-                                histograms['Weights/' + tag] = wandb.Histogram(value.data.cpu())
-                            if not torch.isinf(value.grad).any():
-                                histograms['Gradients/' + tag] = wandb.Histogram(value.grad.data.cpu())
-
                         val_score = evaluate(model, val_loader, device, amp)
                         scheduler.step(val_score)
 
@@ -158,7 +150,6 @@ def train_model(
                                 'step': global_step,
                                 'epoch': epoch,
                                 'validation_Iou': iou[global_step - 1]
-                                # **histograms
                             })
                         except:
                             pass

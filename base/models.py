@@ -1,6 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from datetime import datetime
+from django.utils import timezone
 
 class CustomUser(AbstractUser):
     user_type_data = ((1, "Admin"), (2, "Doctor"), (3, "Patient"))
@@ -19,7 +19,7 @@ class MultipleImage(models.Model):
     masks = models.FileField(upload_to=upload_path_mask, blank=True)
     purpose = models.CharField(max_length=20)
     postedBy = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    date = models.DateField(default=datetime.now())
+    date = models.DateField(default=timezone.now)
 
 class Patient(models.Model):
     id = models.AutoField(primary_key=True)

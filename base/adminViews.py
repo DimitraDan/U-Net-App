@@ -15,7 +15,7 @@ from base.manageImages import *
 from base.predict import predict
 from base.train import training
 import math
-
+import pandas as pd
 
 @login_required(login_url="/login/")
 @user_passes_test(lambda user: user.user_type == "1")
@@ -105,7 +105,7 @@ def train_results(request, run_id):
     # Get the run object using its ID
     run = api.run(f"dimitradan/U-Net/{run_id}")
 
-    history_data = run.history()
+    history_data = pd.DataFrame(run.history())
     summary_data = run.summary._json_dict
 
     train_loss_data = []
@@ -201,7 +201,7 @@ def trainSelected(request):
                 (
                     os.path.join(
                         settings.MEDIA_ROOT + "/selected/mask/train/",
-                        str(obj.id) + "_Segmentation.jpeg",
+                        str(obj.id) + "_Segmentation.png",
                     )
                 ),
             )

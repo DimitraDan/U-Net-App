@@ -1,12 +1,12 @@
-wandb
-tqdm
 Django
 numpy
-Pillow
 opencv-python-headless
 torchvision
-Django
 torch
 psycopg2-binary
 asgiref
 sqlparse
+Pillow
+tqdm
+wandb
+pandas
