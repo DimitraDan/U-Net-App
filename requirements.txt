@@ -1,8 +1,7 @@
 Django
 numpy
-opencv-python-headless
+opencv-python
 torchvision
-torch
 psycopg2-binary
 asgiref
 sqlparse

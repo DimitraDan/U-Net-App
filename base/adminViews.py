@@ -17,6 +17,7 @@ from base.train import training
 import math
 import pandas as pd
 
+
 @login_required(login_url="/login/")
 @user_passes_test(lambda user: user.user_type == "1")
 def adminHome(request):
@@ -96,8 +97,6 @@ def train(request):
     return render(request, "Admin/train.html", content)
 
 
-@login_required(login_url="/login/")
-@user_passes_test(lambda user: user.user_type == "1")
 def train_results(request, run_id):
     # Initialize W&B API
     api = wandb.Api()

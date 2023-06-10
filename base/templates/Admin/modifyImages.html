@@ -28,7 +28,7 @@
   <div id="wrapper">
     <div id="leftWrapper">
       <div id="listView" class="list">
-        <li><a href="#">Home</a></li>
+        <li><a href="/adminHome">Home</a></li>
         <li><a href="/trainModel">Train</a></li>
         <li><a href="/modifyDoctors">Users</a></li>
         <li><a href="/modifyImages">Images</a></li>
@@ -108,7 +108,7 @@
               </div>
               <img class="lazyload" src="https://media.tenor.com/UnFx-k_lSckAAAAM/amalie-steiness.gif"
                 id='img{{image.id}}' onmouseleave="showMask('{{image.images.url}}', 'img{{image.id}}')"
-                data-src={{image.images.url}} onmouseover="showMask('{{image.masks.url}}', 'img{{image.id}}')" alt="">
+                data-src={{image.images.url}} onmouseover="showMask('{{image.masks.url}}','img{{image.id}}')" alt="">
             </span>
           </div>
           {% endfor %}
@@ -124,6 +124,7 @@
       </div>
       <div class="shadow"></div>
     </div>
+  </div>
 
     <!-- end center -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>

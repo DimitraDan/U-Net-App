@@ -1,6 +1,17 @@
+import base64
+import json
 import logging
 import os
+import uuid
+from io import BytesIO
+from typing import io
+
+import numpy as np
 import torch.nn.functional as F
+from PIL.Image import Image
+from django.core.files import File
+from torchvision.transforms import ToPILImage
+
 from base.data_loading import BasicDataset, CarvanaDataset
 from torch.utils.data import DataLoader, random_split, Dataset
 from torch import optim
@@ -8,14 +19,31 @@ import torch.nn as nn
 from tqdm import tqdm
 from base.iou_score import *
 from pathlib import Path
-import wandb
 from base.evaluate import evaluate
 from base.manageFolders import deleteFiles
+
+from base.models import Run, TrainLoss, Validation, Checkpoint
 
 dir_img = "media/selected/image/train/"
 dir_mask = "media/selected/mask/train/"
 dir_checkpoint = "base/checkpoints/"
 
+def create_image_representation(image_tensor, format='JPEG'):
+    # Assuming image_tensor is a tensor representing an image
+    # Convert the tensor to a PIL Image
+    to_pil = ToPILImage()
+    image = to_pil(image_tensor.cpu())
+
+    # Create a BytesIO object to hold the image data
+    image_io = BytesIO()
+
+    # Save the PIL Image to the BytesIO object with the specified format
+    image.save(image_io, format=format)
+
+    # Create a Django File object from the BytesIO data
+    image_file = File(image_io, name=f'{uuid.uuid4()}.{format}')
+
+    return image_file
 
 def train_model(
         model,
@@ -47,16 +75,6 @@ def train_model(
     train_loader = DataLoader(train_set, shuffle=True, **loader_args)
     val_loader = DataLoader(val_set, shuffle=False, drop_last=True, **loader_args)
 
-    # Log in to WandB with your API key
-    wandb.login(key="3e1234cfe5ed344ab23cea32ea863b2d5c110f09")
-
-    # (Initialize logging)
-    experiment = wandb.init(project='U-Net', resume='allow')
-    experiment.config.update(
-        dict(epochs=epochs, batch_size=batch_size, learning_rate=learning_rate,
-             val_percent=val_percent, save_checkpoint=save_checkpoint, img_scale=img_scale, amp=amp)
-    )
-
     logging.info(f'''Starting training:
         Epochs:          {epochs}
         Batch size:      {batch_size}
@@ -77,6 +95,7 @@ def train_model(
     criterion = nn.CrossEntropyLoss() if model.n_classes > 1 else nn.BCEWithLogitsLoss()
     global_step = 0
     iou = []
+    run = Run.objects.create()
 
     # 5. Begin training
     for epoch in range(1, epochs + 1):
@@ -121,11 +140,16 @@ def train_model(
                 pbar.update(images.shape[0])
                 global_step += 1
                 epoch_loss += loss.item()
-                experiment.log({
-                    'train_loss': loss.item(),
-                    'step': global_step,
-                    'epoch': epoch
-                })
+
+                train_loss = TrainLoss.objects.create(
+                    train_loss=loss.item(),
+                    epoch=global_step,
+                    step=epoch
+                )
+                try:
+                    run.train_loss.add(train_loss)
+                except Exception as e:
+                     print(f"Error saving tRAINLOSS instance: {e}")
 
                 pbar.set_postfix(**{'loss (batch)': loss.item()})
 
@@ -137,22 +161,21 @@ def train_model(
                         scheduler.step(val_score)
 
                         logging.info('Validation Iou score: {}'.format(val_score))
-
                         try:
-                            experiment.log({
-                                'learning_rate': optimizer.param_groups[0]['lr'],
-                                'avg_validation_Iou': val_score,
-                                'images': wandb.Image(images[0].cpu()),
-                                'masks': {
-                                    'true': wandb.Image(true_masks[0].float().cpu()),
-                                    'pred': wandb.Image(masks_pred.argmax(dim=1)[0].float().cpu()),
-                                },
-                                'step': global_step,
-                                'epoch': epoch,
-                                'validation_Iou': iou[global_step - 1]
-                            })
-                        except:
-                            pass
+                            validation = Validation.objects.create(
+                                learning_rate=optimizer.param_groups[0]['lr'],
+                                avg_validation_Iou=val_score,
+                                epoch=global_step,
+                                step=epoch,
+                                validation_Iou=iou[global_step - 1],
+                                image=create_image_representation(images[0], 'jpeg'),
+                                true_mask = create_image_representation(true_masks[0].float(), 'png'),
+                                pred_mask = create_image_representation(masks_pred.argmax(dim=1)[0].float(), 'png')
+                            )
+                            run.validation_loss.add(validation)
+
+                        except Exception as e:
+                            print(f"Error saving Validation instance: {e}")
 
         if save_checkpoint:
             Path(dir_checkpoint).mkdir(parents=True, exist_ok=True)
@@ -161,9 +184,9 @@ def train_model(
             torch.save(state_dict, dir_checkpoint + '/checkpoint_epoch' + str(epoch) + '.pth')
             print(f'Checkpoint {epoch} saved!')
 
-            # Save model to W&B
-            wandb.save(dir_checkpoint + '/checkpoint_epoch' + str(epoch) + '.pth')
-
+            checkpoint = Checkpoint.objects.create(epoch=epoch)
+            checkpoint.file_path.save('checkpoint.pth', File(open(dir_checkpoint, 'rb')))
+            run.checkpoints.add(checkpoint)
 
 def training(model_path="base/MODEL.pth"):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -182,9 +205,10 @@ def training(model_path="base/MODEL.pth"):
     deleteFiles(dir_checkpoint)
 
     try:
+        torch.cuda.empty_cache()
         train_model(
             model=model,
-            epochs=5,
+            epochs=1,
             batch_size=1,
             learning_rate=1e-5,
             device=device,
@@ -194,23 +218,9 @@ def training(model_path="base/MODEL.pth"):
             amp=False,
             weight_decay=1e-8, )
 
-    except:
-        logging.error('Detected OutOfMemoryError! '
-                      'Enabling checkpointing to reduce memory usage, but this slows down training. '
-                      'Consider enabling AMP (--amp) for fast and memory efficient training')
-        torch.cuda.empty_cache()
-        model.use_checkpointing()
-        train_model(model=model,
-                    epochs=5,
-                    batch_size=1,
-                    learning_rate=1e-5,
-                    device=device,
-                    val_percent=0.1,
-                    save_checkpoint=True,
-                    img_scale=0.5,
-                    amp=False,
-                    weight_decay=1e-8,
-                    )
+    except :
+        logging.error("Failed to train model.")
+
 
     deleteFiles(dir_img)
     deleteFiles(dir_mask)
