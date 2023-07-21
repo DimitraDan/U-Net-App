@@ -1,7 +1,5 @@
-@import url(https://fonts.googleapis.com/css?family=Lato:700);
 
 .btn a {
-    font-family: Lato;
     color: #fafafa;
     display: block;
     text-decoration: none;
@@ -12,8 +10,14 @@
     transition: .5s;
 }
 
+.btn:hover {
+    background: #313233;
+    box-shadow: inset 1px 1px 3px 0 rgba(0, 0, 0, 0.33);
+}
+
 .btn {
-    background: #2d3039;
+    position: absolute;
+    background: #222121;
     margin: 20px auto;
     width: 200px;
     height: 50px;

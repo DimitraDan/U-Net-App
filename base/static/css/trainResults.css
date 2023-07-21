@@ -1,23 +1,11 @@
-table th,
-table td {
-  padding: 10px;
-  border: 1px solid #ddd;
-}
-
-table  th {
-  background-color: #3d3d3d;
-  font-weight: bold;
-  color: #ddd;
-}
-
-table [input=search] {
-  color: #ddd;
-  padding: 5px;
-}
-
 img {
     max-width: 200px;
     max-height: 200px;
+}
+
+h1 {
+  padding-top: 50px;
+  padding-bottom: 20px;
 }
 
 .card-body a{
@@ -72,3 +60,78 @@ input[type="file"] {
   font-weight: bold;
   text-align: center;
 }
+
+select {
+  display: inline-block;
+  position: relative;
+}
+
+select {
+  width: 200px;
+  padding: 8px 20px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: white;
+  cursor: pointer;
+}
+
+ select:focus {
+  outline: none;
+}
+
+select::before {
+  content: '\25BC';
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  font-size: 12px;
+  pointer-events: none;
+}
+
+select::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 5px 5px 0 5px;
+  border-color: #999 transparent transparent transparent;
+  pointer-events: none;
+}
+
+/* Style the options */
+ select option {
+  font-size: 14px;
+  padding: 8px;
+}
+
+.section-title a {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+
+}
+
+.section-title a:hover {
+    background-color: #0062cc;
+    color: #fff;
+}
+
+  .delayed-text {
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  .show .delayed-text {
+    opacity: 1;
+  }

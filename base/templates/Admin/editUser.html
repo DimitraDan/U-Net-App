@@ -1,0 +1,56 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+          <link rel="stylesheet" href="{% static 'css/editDoctor.css' %}">
+      <meta charset="UTF-8">
+    <title>Admin Base</title>
+  </head>
+  <body>
+{% include "componets/sideNav.html" %}
+
+{% block content %}
+    <div id="rightWrapper">
+        <div id="header">
+            <a id="fullPage" href="#">|||</a>
+            <div id="contentWrapper">
+
+
+
+
+
+                <form action="/edit_doctor_save" method="post" id="contactFrm" name="contactFrm">
+                {% csrf_token %}
+
+                <input type="text"  placeholder="username" value="" name="username" class="txt">
+
+                <input type="text"  placeholder="username" value="" name="username" class="txt">
+                <input type="text"  placeholder="email" value="" name="email" class="txt">
+                <input type="password"  placeholder="Change Pwd" value="" name="password" class="txt">
+                <br>
+
+                <button type="submit" >Update</button>
+                    <input  type="hidden"  placeholder="user_id" value={{doctor.user.id}} name="user_id" class="txt">
+
+              </form>
+
+              <div class="form-group">
+                {% if messages %}
+                  {% for message in messages %}
+                  {% if message.tags == 'error' %}
+                  <div class="alert alert-danger" style="margin-top:10px">{{ message }}</div>
+                  {% endif %}
+                  {% if message.tags == 'success' %}
+                  <div class="alert alert-success" style="margin-top:10px">{{ message }}</div>
+                  {% endif %}
+                  {% endfor %}
+                {% endif %}
+              </div>
+
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+  </body>
+</html>

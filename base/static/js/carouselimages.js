@@ -1,34 +1,7 @@
 
-// $(document).ready(function(){
-//     var docWidth = $('body').width(),
-//         $wrap = $('#wrap'),
-//         $images = $('#wrap .hb'),
-//         slidesWidth = $wrap.width();
-    
-//     $(window).on('resize', function(){
-//       docWidth = $('body').width();
-//       slidesWidth = $wrap.width();
-//     })
-    
-//     $(document).mousemove(function(e) {
-//       var mouseX = e.pageX,
-//           offset = mouseX / docWidth * slidesWidth - mouseX / 2;
-      
-//       $images.css({
-//         '-webkit-transform': 'translate3d(' + -offset + 'px,0,0)',
-//                 'transform': 'translate3d(' + -offset + 'px,0,0)'
-//         });
-//     });
-//   })
-
-// Drawing js 
-
-
-
 var all_points_x = []; 
 var all_points_y = []; 
-var eraser_points_x = [];
-var eraser_points_y = [];
+
 
 // enabling drawing on the blank canvas
 drawOnImage();
@@ -121,12 +94,10 @@ let isDrawing;
     isDrawing = true;
     context.beginPath();
     context.lineWidth = size;
-    if (color == 'eraser') {
-      context.globalCompositeOperation="destination-out";
-    } else {
-      context.globalCompositeOperation="source-over";
-      context.strokeStyle = color;
-    }
+
+    context.globalCompositeOperation="source-over";
+    context.strokeStyle = color;
+
     context.lineJoin = "round";
     context.lineCap = "round";
     let pos = getMousePos(canvasElement, e)
@@ -137,13 +108,9 @@ let isDrawing;
     if (isDrawing) { 
       let pos = getMousePos(canvasElement, e)
 
-      if(color == 'eraser') {
-        eraser_points_x.push(pos.x);
-        eraser_points_y.push(pos.y);
-      } else {
         all_points_x.push(pos.x);
         all_points_y.push(pos.y);
-      }
+
       context.lineTo(pos.x, pos.y);
       context.stroke();
     }

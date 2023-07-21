@@ -6,7 +6,7 @@ body {
 	box-sizing: border-box;
 	height: 100vh;
 	overflow: hidden;
-	background: url("/static/images/login-signup.jpg") no-repeat center center;
+	background: url("/frontend/static/images/login-signup.jpg") no-repeat center center;
 	background-size: cover;
 	backdrop-filter: blur(7px);
 }

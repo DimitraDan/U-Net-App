@@ -1,10 +1,7 @@
 import torch
 import torch.nn.functional as F
 from tqdm import tqdm
-import logging
 from base.iou_score import multiclass_iou_coeff, iou_coeff
-from base.data_loading import BasicDataset, CarvanaDataset
-from torch.utils.data import DataLoader, random_split, Dataset
 
 dir_img = "media/image/evaluate"
 dir_mask = "media/mask/evaluate"
@@ -40,22 +37,3 @@ def evaluate(net, dataloader, device, amp):
 
     net.train()
     return iou_score / max(num_val_batches, 1)
-
-
-def evaluating():
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    logging.info(f'Using device {device}')
-
-    model = torch.hub.load('milesial/Pytorch-UNet', 'unet_carvana', pretrained=False, scale=0.5)
-    model.to(device=device)
-    state_dict = torch.load("base/checkpoint_epoch1.pth", map_location=device)
-    del state_dict['mask_values']
-
-    model.load_state_dict(state_dict)
-    try:
-        dataset = CarvanaDataset(dir_img, dir_mask, 0.5)
-    except (AssertionError, RuntimeError, IndexError):
-        dataset = BasicDataset(dir_img, dir_mask, 0.5)
-        
-    val_loader = DataLoader(dataset, shuffle=False, drop_last=True)
-    return evaluate(model, val_loader, device, False)

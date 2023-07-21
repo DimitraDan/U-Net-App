@@ -37,8 +37,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
+    'rest_framework',
     'medicalApp',
-    'base'
+    'base',
+]
+
+CORS_ORIGIN_WHITELIST = [
+     'http://localhost:3000'
 ]
 
 MIDDLEWARE = [
@@ -120,7 +126,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = 'static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+STATIC_ROOT = os.path.join(BASE_DIR, 'frontend/static/')
 AUTH_USER_MODEL="base.CustomUser"
 AUTHENTICATION_BACKENDS=['base.emailBackEnd.EmailBackEnd']
 

@@ -1,3 +1,39 @@
+
+#profileHeader{
+  animation: slide 60s linear infinite alternate;
+  background-image: url("/frontend/static/images/2328064.jpg");
+  background-repeat: repeat;
+  height: 20em;
+  position: relative;
+  box-shadow: 0em 0em 0em rgba(0,0,0,0);
+  z-index: 2;
+  padding:10em 1em 1em 1em;
+  will-change: height,padding,box-shadow;
+  transition-property: height,padding,box-shadow;
+}
+@keyframes slide {
+  to {
+    background-position: 0 50%;
+  }
+}
+
+#profileHeader h1{
+  margin: 0px;
+  position: absolute;
+  color: #fff;
+  text-align: center;
+  font-weight: 300;
+  width: 5em;
+  height: 5em;
+  line-height: 2em;
+  left: 45%;
+  margin-left: -2.5em;
+  top: 2em;
+  font-size: 2em;
+  opacity: 1;
+  will-change: top,opacity;
+  transition-property: top,opacity;
+}
 /* Charts Style  */
 
 .fm-charts-color-1 {
@@ -23,3 +59,4 @@
 .fm-charts-color-6 {
   fill: #ffa600 !important;
 }
+

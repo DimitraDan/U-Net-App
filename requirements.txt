@@ -9,3 +9,5 @@ Pillow
 tqdm
 wandb
 pandas
+djangorestframework
+django-cors-headers
