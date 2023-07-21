@@ -3,135 +3,107 @@
 <html lang="en">
 
 <head>
-  <script src="https://cdn.jsdelivr.net/npm/lazyload@2.0.0-beta.2/lazyload.js"></script>
-  <script>
-    window.addEventListener("load", function (event) {
-      lazyload();
-    });
-  </script>
-  <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
-  <link rel="stylesheet" href="{% static 'css/modifyImages.css' %}">
-  <link rel="stylesheet" href="{% static 'css/pageLoad.css' %}">
-  <link rel="stylesheet" href="{% static 'css/deleteButton.css' %}">
-  <meta charset="UTF-8">
-  <title>Admin Base</title>
+    <script src="https://cdn.jsdelivr.net/npm/lazyload@2.0.0-beta.2/lazyload.js"></script>
+    <script>
+        window.addEventListener("load", function (event) {
+            lazyload();
+        });
+    </script>
+    <link rel="stylesheet" href="{% static 'css/modifyImages.css' %}">
+    <link rel="stylesheet" href="{% static 'css/deleteButton.css' %}">
+    <meta charset="UTF-8">
+    <title>Admin Base</title>
 </head>
 
 <body>
-  <script>
-    var app = document.getElementsByTagName("BODY")[0];
-    if (localStorage.lightMode == "dark") {
-      app.setAttribute("light-mode", "dark");
-    }
-  </script>
-  <!-- sideBar -->
-  <div id="wrapper">
-    <div id="leftWrapper">
-      <div id="listView" class="list">
-        <li><a href="/adminHome">Home</a></li>
-        <li><a href="/trainModel">Train</a></li>
-        <li><a href="/modifyDoctors">Users</a></li>
-        <li><a href="/modifyImages">Images</a></li>
-        <li><a href="/">Logout</a></li>
-        <li style="position: absolute; top: 100%; height: 150px;">
-          <button class="light-mode-button" aria-label="Toggle Light Mode" onclick="toggle_light_mode()">
-            <span></span>
-            <span></span>
-          </button>
-        </li>
-      </div>
-    </div>
-    <!-- end of sideBar -->
+{% include "componets/sideNav.html" %}
 
-    <!-- Put content in center -->
-
+{% block content %}
     <div id="rightWrapper">
-      <div id="header">
-        <a id="fullPage" href="#">|||</a>
-      </div>
-      <div id="contentWrapper">
-        <button class="open-button" onclick="openForm()">Open Form</button>
-
-        <div class="form-popup" id="myForm">
-          <form action="/add_image" method="post" enctype="multipart/form-data" name="submitImage"
-            class="form-container">
-            {% csrf_token %}
-            <h1>Add</h1>
-            <label for="purpose"><b>Purpose</b></label>
-            <select name="purpose" id="purpose" required>
-              <option value="train">train</option>
-              <option value="test">test</option>
-            </select>
-            <br>
-            <label for="Upload images:"><b>Image</b>
-              <input type="file" id="imageFiles" name="imageFiles" accept="image/*" multiple required>
-            </label>
-            <br>
-            <label for="Upload masks:"><b>Mask</b>
-              <input type="file" id="maskFiles" name="maskFiles" accept="image/*" multiple required>
-            </label>
-            <script>
-              const input = document.querySelector('input[type="file"]');
-              input.addEventListener('change', () => {
-                if (input.files.length > 100) {
-                  alert('You can only upload a maximum of 100 images');
-                  input.value = '';
-                }
-              });
-            </script>
-            <br>
-            <button type="submit" name="submitImage" class="btn">Submit</button>
-            <button type="button" class="btn cancel" onclick="closeForm()">Close</button>
-          </form>
+        <div id="header">
+            <a id="fullPage" href="#">|||</a>
         </div>
+        <div id="contentWrapper">
+            <button class="open-button" onclick="openForm()">Open Form</button>
 
-        <!-- filter Items -->
-        <nav>
-          <div class="items">
-            <span class="item active" data-name="all">All</span>
-            <span class="item" data-name="train">Train {{trainCount}}</span>
-            <span class="item" data-name="test">Test {{testCount}}</span>
-            <span class="item" data-name="report">Report {{reportCount}}</span>
-            <span class="item" data-name="evaluate">Evaluate {{evaluateCount}}</span>
-          </div>
-        </nav>
-        <!-- filter Images -->
+            <div class="form-popup" id="myForm">
+                <form action="/add_image" method="post" enctype="multipart/form-data" name="submitImage"
+                      class="form-container">
+                    {% csrf_token %}
+                    <h1>Add</h1>
+                    <label for="purpose"><b>Purpose</b></label>
+                    <select name="purpose" id="purpose" required>
+                        <option value="train">train</option>
+                        <option value="test">test</option>
+                    </select>
+                    <br>
+                    <label for="Upload images:"><b>Image</b>
+                        <input type="file" id="imageFiles" name="imageFiles" accept="image/*" multiple required>
+                    </label>
+                    <br>
+                    <label for="Upload masks:"><b>Mask</b>
+                        <input type="file" id="maskFiles" name="maskFiles" accept="image/*" multiple required>
+                    </label>
+                    <script>
+                        const input = document.querySelector('input[type="file"]');
+                        input.addEventListener('change', () => {
+                            if (input.files.length > 100) {
+                                alert('You can only upload a maximum of 100 images');
+                                input.value = '';
+                            }
+                        });
+                    </script>
+                    <br>
+                    <button type="submit" name="submitImage" class="btn">Submit</button>
+                    <button type="button" class="btn cancel" onclick="closeForm()">Close</button>
+                </form>
+            </div>
 
-        <div class="gallery">
-          {% for image in images %}
-          <div class="image" data-name="{{image.purpose}}">
+            <!-- filter Items -->
+            <nav>
+                <div class="items">
+                    <span class="item active" data-name="all">All</span>
+                    <span class="item" data-name="train">Train {{ trainCount }}</span>
+                    <span class="item" data-name="test">Test {{ testCount }}</span>
+                    <span class="item" data-name="report">Report {{ reportCount }}</span>
+                </div>
+            </nav>
+            <!-- filter Images -->
+
+            <div class="gallery">
+                {% for image in images %}
+                    <div class="image" data-name="{{ image.purpose }}">
             <span>
               <div class="btn">
-                <a style="position: absolute; padding-top: 0%;" href="delete_image/{{ image.id }}">DELETE
-                  {{image.date}}
+                <a style="position: absolute; padding-top: 0%;" href="delete_image/{{ image.id }}">
+                  {{ image.date }}
+                    <i class="fas fa-trash-alt"></i>
                 </a>
               </div>
               <img class="lazyload" src="https://media.tenor.com/UnFx-k_lSckAAAAM/amalie-steiness.gif"
-                id='img{{image.id}}' onmouseleave="showMask('{{image.images.url}}', 'img{{image.id}}')"
-                data-src={{image.images.url}} onmouseover="showMask('{{image.masks.url}}','img{{image.id}}')" alt="">
+                   id='img{{ image.id }}' onmouseleave="showMask('{{ image.images.url }}', 'img{{ image.id }}')"
+                   data-src={{ image.images.url }} onmouseover="showMask('{{ image.masks.url }}','img{{ image.id }}')"
+                   alt="">
             </span>
-          </div>
-          {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
         </div>
-      </div>
-      <!-- fullscreen img preview box -->
-      <div class="preview-box">
-        <div class="details">
-          <span class="title">Image Category: <p></p></span>
-          <span class="icon fas fa-times">x</span>
+        <!-- fullscreen img preview box -->
+        <div class="preview-box">
+            <div class="details">
+                <span class="title">Image Category: <p></p></span>
+                <span class="icon fas fa-times">x</span>
+            </div>
+            <div class="image-box"><img src="" alt=""></div>
         </div>
-        <div class="image-box"><img src="" alt=""></div>
-      </div>
-      <div class="shadow"></div>
+        <div class="shadow"></div>
     </div>
-  </div>
+{% endblock %}
 
-    <!-- end center -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
-    <script src="static/js/darkMode.js"></script>
-    <script src="static/js/modifyImages.js"></script>
-    <script src="static/js/sideNav.js"></script>
-    <script src="static/js/pageLoad.js"></script>
+<!-- end center -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+<script src="static/js/modifyImages.js"></script>
 </body>
 
 </html>

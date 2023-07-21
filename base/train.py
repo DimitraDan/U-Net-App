@@ -1,34 +1,29 @@
-import base64
-import json
 import logging
 import os
 import uuid
 from io import BytesIO
-from typing import io
+from pathlib import Path
 
-import numpy as np
+import torch.nn as nn
 import torch.nn.functional as F
-from PIL.Image import Image
 from django.core.files import File
+from torch import optim
+from torch.utils.data import DataLoader, random_split
 from torchvision.transforms import ToPILImage
+from tqdm import tqdm
 
 from base.data_loading import BasicDataset, CarvanaDataset
-from torch.utils.data import DataLoader, random_split, Dataset
-from torch import optim
-import torch.nn as nn
-from tqdm import tqdm
-from base.iou_score import *
-from pathlib import Path
 from base.evaluate import evaluate
+from base.iou_score import *
 from base.manageFolders import deleteFiles
-
-from base.models import Run, TrainLoss, Validation, Checkpoint
+from base.models import Run, TrainLoss, Validation, Checkpoint, FailedRun
 
 dir_img = "media/selected/image/train/"
 dir_mask = "media/selected/mask/train/"
 dir_checkpoint = "base/checkpoints/"
 
-def create_image_representation(image_tensor, format='JPEG'):
+
+def create_image_representation(image_tensor, format='jpeg'):
     # Assuming image_tensor is a tensor representing an image
     # Convert the tensor to a PIL Image
     to_pil = ToPILImage()
@@ -45,7 +40,9 @@ def create_image_representation(image_tensor, format='JPEG'):
 
     return image_file
 
+
 def train_model(
+        run,
         model,
         device,
         epochs: int = 5,
@@ -95,7 +92,6 @@ def train_model(
     criterion = nn.CrossEntropyLoss() if model.n_classes > 1 else nn.BCEWithLogitsLoss()
     global_step = 0
     iou = []
-    run = Run.objects.create()
 
     # 5. Begin training
     for epoch in range(1, epochs + 1):
@@ -143,13 +139,10 @@ def train_model(
 
                 train_loss = TrainLoss.objects.create(
                     train_loss=loss.item(),
-                    epoch=global_step,
-                    step=epoch
+                    epoch=epoch,
+                    step=global_step
                 )
-                try:
-                    run.train_loss.add(train_loss)
-                except Exception as e:
-                     print(f"Error saving tRAINLOSS instance: {e}")
+                run.train_loss.add(train_loss)
 
                 pbar.set_postfix(**{'loss (batch)': loss.item()})
 
@@ -161,34 +154,40 @@ def train_model(
                         scheduler.step(val_score)
 
                         logging.info('Validation Iou score: {}'.format(val_score))
-                        try:
-                            validation = Validation.objects.create(
-                                learning_rate=optimizer.param_groups[0]['lr'],
-                                avg_validation_Iou=val_score,
-                                epoch=global_step,
-                                step=epoch,
-                                validation_Iou=iou[global_step - 1],
-                                image=create_image_representation(images[0], 'jpeg'),
-                                true_mask = create_image_representation(true_masks[0].float(), 'png'),
-                                pred_mask = create_image_representation(masks_pred.argmax(dim=1)[0].float(), 'png')
-                            )
-                            run.validation_loss.add(validation)
-
-                        except Exception as e:
-                            print(f"Error saving Validation instance: {e}")
+                        validation = Validation.objects.create(
+                            learning_rate=optimizer.param_groups[0]['lr'],
+                            avg_validation_Iou=val_score,
+                            epoch=epoch,
+                            step=global_step,
+                            validation_Iou=iou[global_step - 1],
+                            image=create_image_representation(images[0], 'jpeg'),
+                            true_mask=create_image_representation(true_masks[0].float(), 'png'),
+                            pred_mask=create_image_representation(masks_pred.argmax(dim=1)[0].float(), 'png')
+                        )
+                        run.validation_loss.add(validation)
 
         if save_checkpoint:
-            Path(dir_checkpoint).mkdir(parents=True, exist_ok=True)
-            state_dict = model.state_dict()
-            state_dict['mask_values'] = dataset.mask_values
-            torch.save(state_dict, dir_checkpoint + '/checkpoint_epoch' + str(epoch) + '.pth')
-            print(f'Checkpoint {epoch} saved!')
+            try:
+                checkpoint_uuid = uuid.uuid4()
+                Path(dir_checkpoint).mkdir(parents=True, exist_ok=True)
+                state_dict = model.state_dict()
+                state_dict['mask_values'] = dataset.mask_values
+                torch.save(state_dict, f'{dir_checkpoint}/checkpoint_{checkpoint_uuid}_{epoch}.pth')
+                print(f'Checkpoint {epoch} saved!')
 
-            checkpoint = Checkpoint.objects.create(epoch=epoch)
-            checkpoint.file_path.save('checkpoint.pth', File(open(dir_checkpoint, 'rb')))
-            run.checkpoints.add(checkpoint)
+                checkpoint = Checkpoint.objects.create(epoch=epoch)
+                checkpoint.file_path.save(f'checkpoint_{checkpoint_uuid}_{epoch}.pth',
+                                          File(open(f'{dir_checkpoint}/checkpoint_{checkpoint_uuid}_{epoch}.pth', 'rb'))
+                                          )
+                run.checkpoint.add(checkpoint)
+            except Exception as e:
+                print(f"Error saving ch instance: {e}")
 
-def training(model_path="base/MODEL.pth"):
+
+def training(model_path="base/MODEL.pth", request=None):
+    if request.FILES.get("file") is not None:
+        model_path = request.FILES.get("file")
+
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     logging.info(f'Using device {device}')
 
@@ -199,16 +198,17 @@ def training(model_path="base/MODEL.pth"):
     try:
         model.load_state_dict(state_dict)
     except:
-        mask_values = state_dict.pop('mask_values')
+        state_dict.pop('mask_values')
         model.load_state_dict(state_dict)
 
     deleteFiles(dir_checkpoint)
-
+    run = Run.objects.create(status='RUNNING', trainer=request.user, name=request.POST.get("name"))
     try:
         torch.cuda.empty_cache()
         train_model(
+            run=run,
             model=model,
-            epochs=1,
+            epochs=5,
             batch_size=1,
             learning_rate=1e-5,
             device=device,
@@ -216,11 +216,27 @@ def training(model_path="base/MODEL.pth"):
             save_checkpoint=True,
             img_scale=0.5,
             amp=False,
-            weight_decay=1e-8, )
+            weight_decay=1e-8,
+        )
+        # Training completed successfully
+        run.status = 'FINISHED'
+        run.save()
+    except KeyboardInterrupt or Exception as e:
+        checkpoint_uuid = uuid.uuid4()
 
-    except :
-        logging.error("Failed to train model.")
+        run.status = 'FAILED'
+        run.save()
+        print(f"Training failed: {str(e)}")
 
-
-    deleteFiles(dir_img)
-    deleteFiles(dir_mask)
+        # Create FailedRun instance
+        failed_run = FailedRun.objects.create(
+            run=run,
+            model_path=f'{dir_checkpoint}/failed_run_{checkpoint_uuid}.pth',
+            optimizer_state_path=f'{dir_checkpoint}/optimizer_state_{checkpoint_uuid}.pth'
+        )
+        failed_run.image_files.set(run.image_files.all())  # Copy image files from the failed run
+        return failed_run
+    finally:
+        deleteFiles(dir_img)
+        deleteFiles(dir_mask)
+        return run

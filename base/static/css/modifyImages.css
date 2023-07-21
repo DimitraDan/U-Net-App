@@ -1,27 +1,33 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
+
 *{
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
+
 ::selection{
   color: #fff;
   background: #007bff;
 }
+
 .wrapper{
   margin: 100px auto;
   max-width: 1100px;
 }
+
 .wrapper nav{
   display: flex;
   justify-content: center;
 }
+
 .wrapper .items{
   display: flex;
   max-width: 720px;
   width: 100%;
   justify-content: space-between;
 }
+
 .items span{
   padding: 7px 25px;
   font-size: 18px;
@@ -231,8 +237,9 @@ select{
   outline: none;
 }
 
-/* Set a style for the submit/login button */
 .form-container .btn {
+      position: relative;
+
   background-color: #2b82df;
   color: white;
   padding: 16px 20px;

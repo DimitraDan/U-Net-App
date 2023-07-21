@@ -1,224 +1,293 @@
 * {
-  box-sizing: border-box;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
-html,
 body {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  width: 100%;
+    font-family: Montserrat, Arial, Verdana, serif;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    padding: 20px;
+}
+
+table th,
+table td {
+    padding: 8px;
+    text-align: left;
+     border: 1px solid #ddd;
+
+}
+
+table th {
+  background-color: #3d3d3d;
+  font-weight: bold;
+      color: #ddd;
+}
+
+table tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+table .no-sort {
+    width: 60px;
+}
+
+table form {
+    display: inline;
+    margin-right: 5px;
+}
+
+table button,
+table a {
+    display: inline-block;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+table button:hover,
+table a:hover {
+    background-color: #0062cc;
+}
+
+.download-links {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.download-links a {
+    margin: 0 5px;
+}
+
+.download-links a i {
+    margin-right: 5px;
+}
+
+.container {
+    max-width: 50vw;
+    margin: 0 auto;
 }
 
 #wrapper {
-  display: block;
-  position: fixed;
-  width: 100%;
-  height: 100%;
+    display: block;
+    position: fixed;
+    width: 100%;
+    height: 100%;
 }
 
 #leftWrapper {
-  display: inline-block;
-  position: absolute;
-  left: 0;
-  margin: 0;
-  padding: 0;
-  width: 15em;
-  height: 100%;
+    display: inline-block;
+    position: absolute;
+    left: 0;
+    margin: 0;
+    padding: 0;
+    width: 15em;
+    height: 100%;
 
-  background-color: #1e1e1e;
+    background-color: #1e1e1e;
 }
 
 #listView {
-  display: block;
-  position: relative;
+    display: block;
+    position: relative;
 }
 
 #listView li {
-  display: block;
-  list-style: none;
+    line-height: 1.5;
+    display: block;
+    list-style: none;
 }
 
 #listView li a {
-  display: block;
-  padding: 20px;
+    display: block;
+    padding: 20px;
 
-  color: #fff;
-  font-family: sans-serif;
-  font-size: 1.1em;
-  text-decoration: none;
+    color: #fff;
+    font-family: sans-serif;
+    font-size: 1.1em;
+    text-decoration: none;
 
-  border-top: 1px solid rgba(0, 0, 0, 0.5);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    border-top: 1px solid rgba(0, 0, 0, 0.5);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 
-  -webkit-transition: all .20s ease;
-  -moz-transition: all .20s ease;
-  -o-transition: all .20s ease;
-  transition: all .20s ease;
+    -webkit-transition: all .20s ease;
+    -moz-transition: all .20s ease;
+    -o-transition: all .20s ease;
+    transition: all .20s ease;
 }
 
 #rightWrapper {
-  display: inline-block;
-  position: absolute;
-  left: 15em;
-  margin: 0;
-  padding: 0px 40px;
-  width: calc(100% - 15em);
-  height: 100%;
-  overflow-y: scroll;
+    display: inline-block;
+    position: absolute;
+    left: 15em;
+    margin: 0;
+    padding: 0px 40px;
+    width: calc(100% - 15em);
+    height: 100%;
+    overflow-y: scroll;
 
-  background-color: #efefef;
+    background-color: #efefef;
 
-  -webkit-transition: all .20s ease;
-  -moz-transition: all .20s ease;
-  -o-transition: all .20s ease;
-  transition: all .20s ease;
+    -webkit-transition: all .20s ease;
+    -moz-transition: all .20s ease;
+    -o-transition: all .20s ease;
+    transition: all .20s ease;
 }
 
 #header {
-  display: block;
-  position: fixed;
-  left: 15em;
-  width: 100%;
-  z-index: 999;
+    display: block;
+    position: fixed;
+    left: 15em;
+    width: 100%;
+    z-index: 999;
 
-  background-color: #efefef;
-  border-bottom: 2px solid rgba(0, 0, 0, 0.2);
+    background-color: #efefef;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.2);
 
-  -webkit-transition: all .20s ease;
-  -moz-transition: all .20s ease;
-  -o-transition: all .20s ease;
-  transition: all .20s ease;
+    -webkit-transition: all .20s ease;
+    -moz-transition: all .20s ease;
+    -o-transition: all .20s ease;
+    transition: all .20s ease;
 }
 
 #fullPage {
-  display: inline-block;
-  margin-left: 20px;
-  padding: 10px;
+    display: inline-block;
+    margin-left: 20px;
+    padding: 10px;
 
-  color: #1e1e1e;
-  font-family: sans-serif;
-  font-size: 2em;
-  font-weight: bold;
-  text-decoration: none;
+    color: #1e1e1e;
+    font-family: sans-serif;
+    font-size: 2em;
+    font-weight: bold;
+    text-decoration: none;
 
-  -webkit-transform: rotate(90deg);
-  -moz-transform: rotate(90deg);
-  -o-transform: rotate(90deg);
-  transform: rotate(90deg);
+    -webkit-transform: rotate(90deg);
+    -moz-transform: rotate(90deg);
+    -o-transform: rotate(90deg);
+    transform: rotate(90deg);
 }
 
 #contentWrapper {
-  display: block;
-  position: relative;
-  margin-top: 100px;
-  width: 100%;
-  height: 100%;
+    display: block;
+    position: relative;
+    margin-top: 100px;
+    width: 100%;
+    height: 100%;
 }
 
 .full-page {
-  left: 0 !important;
-  width: 100% !important;
+    left: 0 !important;
+    width: 100% !important;
 }
 
 #listView li a:hover {
-  background-color: #313233;
+    background-color: #313233;
 }
 
 /* darkmode button */
 
 .light-mode-button {
-  background: 0;
-  border: 0;
-  box-sizing: border-box;
-  cursor: pointer;
-  height: 40px;
-  width: 100px;
-  position: relative;
-  border: 1px solid rgba(255, 255, 255, 0);
-  margin-top: 20px;
+    background: 0;
+    border: 0;
+    box-sizing: border-box;
+    cursor: pointer;
+    height: 40px;
+    width: 100px;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0);
+    margin-top: 20px;
 }
 
 .light-mode-button:focus {
-  outline: none;
-  /* Not ideal for accessibility */
+    outline: none;
+    /* Not ideal for accessibility */
 }
 
 .light-mode-button span:nth-child(1) {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100px;
-  height: 40px;
-  border-radius: 20px;
-  background-color: #d6d7db;
-  box-shadow: inset 1px 1px 3px 0 rgb(0 0 0 / 40%);
-  transition: 0.3s;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100px;
+    height: 40px;
+    border-radius: 20px;
+    background-color: #d6d7db;
+    box-shadow: inset 1px 1px 3px 0 rgb(0 0 0 / 40%);
+    transition: 0.3s;
 }
 
 .light-mode-button span:nth-child(2) {
-  position: absolute;
-  top: 5px;
-  left: 5px;
-  width: 30px;
-  height: 30px;
-  background-color: #fff;
-  border-radius: 50%;
-  box-shadow: 1px 1px 2px 0 rgb(0 0 0 / 40%);
-  transition: 0.3s;
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    width: 30px;
+    height: 30px;
+    background-color: #fff;
+    border-radius: 50%;
+    box-shadow: 1px 1px 2px 0 rgb(0 0 0 / 40%);
+    transition: 0.3s;
 }
 
-input[type="button"] {
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  padding: 10px 30px;
-  border-radius: 5px;
-  cursor: pointer;
+input[type="button"], table a {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 30px;
+    border-radius: 5px;
+    cursor: pointer;
 }
 
 /* Light & Dark Mode Styles
 		--------------------------- */
 body[light-mode="dark"] #rightWrapper {
-  background-color: #acb0b3;
+    background-color: #acb0b3;
 }
 
 body[light-mode="dark"] #header {
-  background-color: #acb0b3;
+    background-color: #acb0b3;
 }
 
 body[light-mode="dark"] #contentWrapper {
-  color: #cfcfd6;
+    color: #cfcfd6;
 }
 
 body[light-mode="dark"] .light-mode-button span:nth-child(1) {
-  background-color: #ced4e2;
-  color: #141516;
+    background-color: #ced4e2;
+    color: #141516;
 }
 
 body[light-mode="dark"] .light-mode-button span:nth-child(2) {
-  left: 65px;
-  background-color: #141516;
+    left: 65px;
+    background-color: #141516;
 }
 
-body[light-mode="dark"] input[type="button"] {
-  background-color: #ced4e2;
-  color: #fff;
-  border: none;
-  padding: 10px 30px;
-  border-radius: 5px;
-  cursor: pointer;
+body[light-mode="dark"] input[type="button"], table a {
+    background-color: #ced4e2;
+    color: #fff;
+    border: none;
+    padding: 10px 30px;
+    border-radius: 5px;
+    cursor: pointer;
 }
 
-button {
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
+button, table a {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
 }
 
-button:hover {
-  background-color: #0062cc;
+button:hover, table a:hover {
+    background-color: #0062cc;
+    color: #fff;
 }

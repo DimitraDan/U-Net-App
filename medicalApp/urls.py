@@ -21,7 +21,6 @@ from django.conf.urls.static import static
 from django.views.generic import View
 from django.http import HttpResponse
 
-
 class ImageServeView(View):
     def get(self, request, *args, **kwargs):
         image_path = kwargs.get('image_path')
@@ -40,23 +39,28 @@ urlpatterns = [
     path('doctorHome', doctorViews.doctorHome, name="doctorHome"),
     path('adminHome', adminViews.adminHome, name="adminHome"),
     path('modifyImages', adminViews.modifyImages, name="modifyImages"),
-    path('evaluateModel', adminViews.evaluateModel, name="evaluateModel"),
-    path('evaluation', adminViews.evaluation, name="evaluation"),
+    path('predictMask', adminViews.predictMask, name="predictMask"),
     path('modifyDoctors', adminViews.modifyDoctors, name="modifyDoctors"),
     path('add_image', adminViews.addImage, name="add_image"),
     path('Segmentation', doctorViews.segmentation, name="segmentation"),
     path('Patients', doctorViews.patients, name="patients"),
     path('delete_image/<str:image_id>', adminViews.deleteImage, name="delete_image"),
     path('delete_doctor/<str:doctor_id>', adminViews.deleteDoctor, name="delete_doctor"),
-    path('editDoctor/<str:doctor_id>', adminViews.editDoctor, name="editDoctor"),
+    path('editDoctor/<str:user_id>', adminViews.editDoctor, name="editDoctor"),
     path('edit_doctor_save', adminViews.editDoctorSave, name="edit_doctor_save"),
-    path('trainModel', adminViews.train, name='train'),
+    path('trainList', adminViews.trainList, name='trainList'),
     path('train_selected', adminViews.trainSelected, name='train_selected'),
     path('train_evaluated', adminViews.trainEvaluated, name='train_evaluated'),
     path('train_results/<str:run_id>/', adminViews.train_results, name='train_results'),
     path('image/<path:image_path>/', ImageServeView.as_view(), name='image_serve'),
     path('report', adminViews.report, name='report'),
     path('update_model', adminViews.update_model, name='update_model'),
+    path('updateRunProcess/<int:run_id>/', adminViews.updateRunProcess, name='updateRunProcess'),
+    path('runs/delete/<int:run_id>/', adminViews.deleteRun, name='delete_run'),
+    path('download_csv_runs/', adminViews.download_csv, name='download_csv'),
+    path('download_csv_user/', adminViews.download_csv_user, name='download_csv_user'),
+    path('download_csv_train_results/<int:run_id>/', adminViews.download_csv_train_results, name='download_csv_train_results'),
+
 ]
 
 if settings.DEBUG:

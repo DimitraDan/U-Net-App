@@ -1,0 +1,167 @@
+/* LoginForm styles */
+#msform {
+    text-align: center;
+    position: relative;
+}
+
+#msform fieldset {
+    background: white;
+    border: 0 none;
+    border-radius: 8px;
+    box-shadow: 0 0 15px 1px rgba(0, 0, 0, 0.4);
+    padding: 30px 50px; /* Adjust the padding to increase the size of the white box */
+    box-sizing: border-box;
+    width: 90%; /* Adjust the width to control the overall size of the white box */
+    margin: 0 auto; /* Center the white box horizontally */
+
+    /* Stacking fieldsets above each other */
+    position: relative;
+    display: none; /* Hide all fieldsets by default */
+}
+
+#msform fieldset:first-of-type {
+    display: block; /* Display the first fieldset initially */
+}
+
+/* Inputs */
+#msform input,
+#msform textarea {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    width: 100%;
+    font-family: Montserrat;
+    color: #2C3E50;
+    font-size: 13px;
+}
+
+
+        #msform input:focus,
+        #msform textarea:focus {
+            -moz-box-shadow: none !important;
+            -webkit-box-shadow: none !important;
+            box-shadow: none !important;
+            border: 1px solid #2b82df;
+            outline-width: 0;
+            transition: All 0.5s ease-in;
+            -webkit-transition: All 0.5s ease-in;
+            -moz-transition: All 0.5s ease-in;
+            -o-transition: All 0.5s ease-in;
+        }
+
+        /* Buttons */
+        #msform .action-button,
+        #msform .action-button-previous {
+            width: 150px;
+            background: #2b82df;
+            font-weight: bold;
+            color: white;
+            border: 0 none;
+            border-radius: 25px;
+            cursor: pointer;
+            padding: 10px 5px;
+            margin: 10px 5px;
+            font-size: 14px;
+        }
+
+        #msform .action-button-previous {
+            margin-top: 20px;
+        }
+
+        #msform .action-button:hover,
+        #msform .action-button:focus,
+        #msform .action-button-previous:hover,
+        #msform .action-button-previous:focus {
+            box-shadow: 0 0 0 2px white, 0 0 0 3px #2b82df;
+        }
+
+        /* Headings */
+        .fs-title {
+            font-size: 18px;
+            text-transform: uppercase;
+            color: #2C3E50;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+
+        .fs-subtitle {
+            font-weight: normal;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        /* Progressbar */
+        #progressbar {
+            margin-bottom: 30px;
+            overflow: hidden;
+            /* CSS counters to number the steps */
+            counter-reset: step;
+            text-align: center;
+        }
+
+        #progressbar li {
+            list-style-type: none;
+            color: #666;
+            text-transform: uppercase;
+            font-size: 14px;
+            width: 33.33%;
+            float: left;
+            position: relative;
+            letter-spacing: 1px;
+        }
+
+        #progressbar li:before {
+            content: counter(step);
+            counter-increment: step;
+            width: 30px;
+            height: 30px;
+            line-height: 32px;
+            display: block;
+            font-size: 16px;
+            color: #333;
+            background: white;
+            border-radius: 50%;
+            margin: 0 auto 10px auto;
+        }
+
+        #progressbar li:after {
+            content: '';
+            width: 100%;
+            height: 2px;
+            background: white;
+            position: absolute;
+            left: -50%;
+            top: 9px;
+            z-index: -1; /* Put it behind the numbers */
+        }
+
+        #progressbar li:first-child:after {
+            /* Connector not needed before the first step */
+            content: none;
+        }
+
+        /* Marking active/completed steps blue */
+        /* The number of the step and the connector before it = blue */
+        #progressbar li.active:before,
+        #progressbar li.active:after {
+            background: #2b82df;
+            color: white;
+        }
+
+        @media screen and (max-width: 768px) {
+            #progressbar li:before {
+                font-size: 14px;
+                width: 25px;
+                height: 25px;
+                line-height: 27px;
+            }
+
+            #msform .action-button,
+            #msform .action-button-previous {
+                width: 120px;
+                font-size: 12px;
+            }
+        }

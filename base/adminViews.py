@@ -1,12 +1,10 @@
-import datetime as dt
+import csv
 import json
-from datetime import timedelta
 from django.conf import settings
 
-import wandb
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
 
@@ -14,8 +12,104 @@ from base.manageFolders import *
 from base.manageImages import *
 from base.predict import predict
 from base.train import training
-import math
-import pandas as pd
+
+
+def download_csv_train_results(request, run_id):
+    run = Run.objects.get(id=run_id)
+    train_loss_data = run.train_loss.all()
+    validation_data = run.validation_loss.all()
+
+    # Prepare CSV data
+    csv_data = []
+
+    headers = set()  # Set to store unique headers
+    headers.add('Run')
+    headers.add('Created by')
+    headers.add('Status')
+    headers.add('Timestamp')
+    headers.add('Epoch')
+    headers.add('Step')
+    headers.add('Train Loss')
+    headers.add('Image')
+    headers.add('True Image')
+    headers.add('Predicted Image')
+    headers.add('Validation IoU')
+
+    # Append headers to csv_data
+    csv_data.append(list(headers))
+
+    # Fill data rows
+    for train in train_loss_data:
+        row = [run.name, run.trainer.username, run.status, str(run.date), train.epoch, train.step, train.train_loss]
+
+        validation = find_matching_validation(validation_data, train.step, train.epoch)
+        if validation is not None:
+            row.extend([
+                validation.image.url,
+                validation.true_mask.url,
+                validation.pred_mask.url,
+                validation.validation_Iou
+            ])
+        else:
+            row.extend(['', '', '', ''])
+
+        csv_data.append(row)
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="train_results.csv"'
+
+    writer = csv.writer(response)
+    for row in csv_data:
+        writer.writerow(row)
+
+    return response
+
+
+def find_matching_validation(validation_data, step, epoch):
+    for validation in validation_data:
+        if validation.step == step and validation.epoch == epoch:
+            return validation
+    return None
+
+
+def download_csv_user(request):
+    users = CustomUser.objects.all()
+
+    csv_data = []
+    csv_data.append(['Id', 'Username', 'Last name', 'Email', 'Date joined', 'Role'])
+    for user in users:
+        csv_data.append([user.id, user.username, user.last_name, user.email, user.date_joined, user.user_type])
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="user_list_{}.csv"'.format(uuid.uuid4())
+
+    writer = csv.writer(response)
+    for row in csv_data:
+        writer.writerow(row)
+
+    return response
+
+
+def download_csv(request):
+    # Retrieve the data for the specified run_id
+    runs = Run.objects.all()
+
+    # Prepare the CSV data
+    csv_data = []
+    csv_data.append(['Run ID', 'Status', 'Created Date', 'Created By'])  # Header row
+    for run in runs:
+        csv_data.append([run.id, run.status, run.date, run.trainer.username])  # Data rows
+
+    # Create a CSV response
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="run_{}.csv"'.format(uuid.uuid4())
+
+    # Write the CSV data to the response
+    writer = csv.writer(response)
+    for row in csv_data:
+        writer.writerow(row)
+
+    return response
 
 
 @login_required(login_url="/login/")
@@ -63,151 +157,98 @@ def train_model(request, experiment_id):
 
 @login_required(login_url="/login/")
 @user_passes_test(lambda user: user.user_type == "1")
-def train(request):
-    # Log in to WandB
-    wandb.login(key="3e1234cfe5ed344ab23cea32ea863b2d5c110f09")
-
-    # Specify the name of your project
-    project_name = "U-Net"
-
-    # Initialize the WandB API
-    api = wandb.Api()
-
-    # Retrieve a list of all runs in your project
-    runs = api.runs(project_name)
-
-    trainImgCount = MultipleImage.objects.filter(purpose="train").count()
+def trainList(request):
+    runs = Run.objects.all()
     trainImages = MultipleImage.objects.filter(purpose="train")
-    reportImgCount = MultipleImage.objects.filter(purpose="report").count()
-    reportImages = MultipleImage.objects.filter(purpose="report")
 
-    testImgCount = MultipleImage.objects.filter(purpose="test").count()
-    testImages = MultipleImage.objects.filter(purpose="test")
     content = {
-        "testImgCount": testImgCount,
-        "testImages": testImages,
-        "runCount": len(runs),
         "runs": runs,
-        "trainImgCount": trainImgCount,
-        "trainImages": trainImages,
-        "reportImages": reportImages,
-        "reportImgCount": reportImgCount,
+        "trainImages": trainImages
     }
+    return render(request, "Admin/trainList.html", content)
 
-    return render(request, "Admin/train.html", content)
 
-
-def train_results(request, run_id):
-    # Initialize W&B API
-    api = wandb.Api()
-
-    # Get the run object using its ID
-    run = api.run(f"dimitradan/U-Net/{run_id}")
-
-    history_data = pd.DataFrame(run.history())
-    summary_data = run.summary._json_dict
-
-    train_loss_data = []
-    validation_data = []
-
-    timestamp = run.created_at
-    datetime = dt.datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S")
-    datetime = datetime - timedelta(seconds=1)
-    formatted_timestamp = datetime.strftime("%Y%m%d_%H%M%S")
-    path = find_dir_with_string("wandb", run.id) + "/files/"
-
-    # Get the list of files in the 'checkpoints' directory
-
+@login_required(login_url="/login/")
+@user_passes_test(lambda user: user.user_type == "1")
+def deleteRun(request, run_id):
     try:
-        checkpoints_dir = os.path.join(path, "base/checkpoints")
-        checkpoints_files = os.listdir(checkpoints_dir)
-    except FileNotFoundError:
-        checkpoints_files = []
+        run = Run.objects.get(id=run_id)
+        run.delete()
 
-    for index, row in history_data.iterrows():
-        try:
-            step = row["_step"]
-            epoch = row["epoch"]
+        messages.success(request, "Successfully deleted run")
+        return HttpResponseRedirect(reverse("trainList"))
+    except:
+        messages.error(request, "Failed to delete run")
+        return HttpResponseRedirect(reverse("trainList"))
 
-            if not math.isnan(row["train_loss"]):
-                train_loss = row["train_loss"]
-                train_loss_data.append(
-                    {"step": step, "epoch": epoch, "train_loss": train_loss}
-                )
-            else:
-                learning_rate = row["learning_rate"]
-                validation_Iou = row["validation_Iou"]
-                image_path = row["images"]["path"]
-                mask_pred_path = row["masks.pred"]["path"]
-                mask_true_path = row["masks.true"]["path"]
 
-                validation_data.append(
-                    {
-                        "step": step,
-                        "epoch": epoch,
-                        "image_path": path + image_path,
-                        "mask_pred_path": path + mask_pred_path,
-                        "mask_true_path": path + mask_true_path,
-                        "learning_rate": learning_rate,
-                        "validation_Iou": validation_Iou,
-                    }
-                )
-
-        except TypeError:
-            continue
+@login_required(login_url="/login/")
+@user_passes_test(lambda user: user.user_type == "1")
+def train_results(request, run_id):
+    run = Run.objects.get(id=run_id)
+    validationImages = MultipleImage.objects.filter(purpose="test")
 
     context = {
-        "path": path,
-        "checkpoints_dir": checkpoints_dir,
-        "checkpoints_files": checkpoints_files,
-        "run": run,
-        "formatted_timestamp": formatted_timestamp,
-        "summary_data": summary_data,
-        "validation_data": validation_data,
-        "train_loss_data": train_loss_data,
+        'run': run,
+        'train_loss_data': run.train_loss.all(),
+        'train_loss_chart': list(run.train_loss.all().values()),
+        'validation_data': run.validation_loss.all(),
+        'validation_chart': list(run.validation_loss.all().values()),
+        'checkpoints': run.checkpoint.all()
     }
     return render(request, "Admin/trainResults.html", context)
 
 
 @login_required(login_url="/login/")
 @user_passes_test(lambda user: user.user_type == "1")
-def trainSelected(request):
-    if request.method != "POST":
-        return HttpResponse("<h2>Method Not Allowed</h2>")
-    else:
-        deleteFiles(os.path.join(settings.MEDIA_ROOT, "selected/image/train"))
-        deleteFiles(os.path.join(settings.MEDIA_ROOT, "selected/mask/train"))
+def updateRunProcess(request, run_id):
+    run = Run.objects.get(id=run_id)
+    checkpoints = Checkpoint.objects.filter(run=run)
+    testImages = MultipleImage.objects.filter(purpose="test")
 
-        selected = request.POST.getlist("selection")
-        objs = MultipleImage.objects.filter(images__in=selected)
+    content = {
+        "run": run,
+        "checkpoints": checkpoints,
+        "testImages": testImages
+    }
+    return render(request, "Admin/evaluateModel.html", content)
+
+
+@login_required(login_url="/login/")
+@user_passes_test(lambda user: user.user_type == "1")
+def trainSelected(request):
+    if request.method == "POST":
+        selected_images = request.POST.getlist("selectedImages")
+
+        objs = MultipleImage.objects.filter(id__in=selected_images)
 
         dir_image = "media/selected/image/train/"
         dir_mask = "media/selected/mask/train/"
 
-        # try:
-        for obj in objs:
-            shutil.copyfile(
-                os.path.join(settings.MEDIA_ROOT, obj.images.name),
-                (
-                    os.path.join(
-                        settings.MEDIA_ROOT + "/selected/image/train/",
-                        str(obj.id) + ".jpeg",
-                    )
-                ),
-            )
-            shutil.copyfile(
-                os.path.join(settings.MEDIA_ROOT, obj.masks.name),
-                (
-                    os.path.join(
-                        settings.MEDIA_ROOT + "/selected/mask/train/",
-                        str(obj.id) + "_Segmentation.png",
-                    )
-                ),
-            )
+        try:
+            for obj in objs:
+                shutil.copyfile(
+                    os.path.join(settings.MEDIA_ROOT, obj.images.name),
+                    (
+                        os.path.join(
+                            settings.MEDIA_ROOT + "/selected/image/train/",
+                            str(obj.id) + ".jpeg",
+                        )
+                    ),
+                )
+                shutil.copyfile(
+                    os.path.join(settings.MEDIA_ROOT, obj.masks.name),
+                    (
+                        os.path.join(
+                            settings.MEDIA_ROOT + "/selected/mask/train/",
+                            str(obj.id) + "_Segmentation.png",
+                        )
+                    ),
+                )
 
-        training()
-        # except Exception as e:
-        #     print(f"Error for object : {e}")
+            training(request=request)
+        except Exception as e:
+            print(f"Error for object : {e}")
 
         return HttpResponseRedirect(request.META.get("HTTP_REFERER", "/"))
 
@@ -229,7 +270,7 @@ def trainEvaluated(request):
             json_obj = json.loads(obj)
             insertToFolder(dir_image, dir_mask, json_obj["image"], json_obj["prediction"])
 
-        training(model_path=checkpoint_path)
+        training(model_path=checkpoint_path, request=request)
         # except Exception as e:
         #     print(f"Error for object : {e}")
 
@@ -238,29 +279,32 @@ def trainEvaluated(request):
 
 @login_required(login_url="/login/")
 @user_passes_test(lambda user: user.user_type == "1")
-def evaluateModel(request):
-    return render(request, "Admin/evaluateModel.html")
-
-
-@login_required(login_url="/login/")
-@user_passes_test(lambda user: user.user_type == "1")
-def evaluation(request):
+def predictMask(request):
     if request.method != "POST":
         return HttpResponse("<h2>Method Not Allowed</h2>")
 
     else:
         evaluation = []
         imageFiles = request.FILES.getlist("images")
-        checkpoint = request.POST.get("predict_checkpoint")
+        checkpoint = request.POST.get("prediction_checkpoint")
+        selected_images = request.POST.getlist("selectedImages")
+
         for file in imageFiles:
             imagep = PIL_Image.open(file)
-            prediction = predict(imagep, model_path=checkpoint)
-            evaluation.append(
-                {"image": imageToStr(imagep), "prediction": imageToStr(prediction)}
-            )
-        context = {"evaluation": evaluation, "size": len(evaluation), "checkpoint": checkpoint}
+            prediction = predict(imagep, model_path=f'media/{checkpoint}')
+            evaluation.append({"image": imageToStr(imagep), "prediction": imageToStr(prediction)})
 
-        return render(request, "Admin/evaluateModel.html", context)
+        for image in selected_images:
+            prediction = predict(image, model_path=f'media/{checkpoint}')
+            evaluation.append({"image": imageToStr(image), "prediction": imageToStr(prediction)})
+
+        context = {
+            "evaluation": evaluation,
+            "checkpoint": checkpoint
+        }
+
+        return JsonResponse(context)
+
 
 
 @login_required(login_url="/login/")
@@ -356,8 +400,7 @@ def report(request):
                     {"image": selection_json["image"], "mask": selection_json["mask"]}
                 )
 
-            training()
-
+            training(request=request)
             messages.success(request, "Training finished succesfully!")
 
         content = {
@@ -413,9 +456,14 @@ def deleteImage(request, image_id):
 
 @login_required(login_url="/login/")
 @user_passes_test(lambda user: user.user_type == "1")
-def editDoctor(request, doctor_id):
-    doctor = CustomUser.objects.get(id=doctor_id)
-    return render(request, "Admin/editDoctor.html", {"doctor": doctor, "id": doctor_id})
+def editDoctor(request, user_id):
+    user = CustomUser.objects.get(id=user_id)
+
+    content = {
+        "user": user
+    }
+
+    return render(request, "Admin/editUser.html", content)
 
 
 @login_required(login_url="/login/")

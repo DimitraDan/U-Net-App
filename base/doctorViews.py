@@ -12,7 +12,6 @@ from base.predict import predict
 @user_passes_test(lambda user: user.user_type == '2')
 def doctorHome(request):
     user = request.user
-    # patientcount = user.doctor.patient.all().count()
     context = {
 
     }
