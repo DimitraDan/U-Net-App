@@ -1,7 +1,7 @@
 
 #profileHeader{
   animation: slide 60s linear infinite alternate;
-  background-image: url("/frontend/static/images/2328064.jpg");
+  background-image: url("/static/images/2328064.jpg");
   background-repeat: repeat;
   height: 20em;
   position: relative;

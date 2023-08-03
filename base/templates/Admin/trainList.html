@@ -178,7 +178,7 @@ function submitForm(event) {
     const originalTable = $('#imageTable').DataTable();
 
     // Iterate over each page of the original table
-    originalTable.page.info().pages.forEach(function (page) {
+    for (let page = 0; page < originalTable.page.info().pages; page++) {
         // Go to the specific page
         originalTable.page(page).draw(false);
 
@@ -189,11 +189,10 @@ function submitForm(event) {
                 formData.append('selectedImages', this.value);
             }
         });
-    });
+    }
 
-    // Make an AJAX request using jQuery
     $.ajax({
-        url: '/predictMask/',
+        url: '/train_selected',
         type: 'POST',
         data: formData,
         contentType: false,

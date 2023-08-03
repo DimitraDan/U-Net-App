@@ -15,7 +15,6 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
@@ -37,14 +36,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'corsheaders',
-    'rest_framework',
     'medicalApp',
     'base',
-]
-
-CORS_ORIGIN_WHITELIST = [
-     'http://localhost:3000'
 ]
 
 MIDDLEWARE = [
@@ -77,7 +70,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'medicalApp.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
@@ -89,7 +81,6 @@ DATABASES = {
 }
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = None
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -109,7 +100,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 
@@ -121,16 +111,15 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = 'static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'frontend/static/')
-AUTH_USER_MODEL="base.CustomUser"
-AUTHENTICATION_BACKENDS=['base.emailBackEnd.EmailBackEnd']
+STATIC_ROOT = os.path.join(BASE_DIR, '/static/')
+AUTH_USER_MODEL = "base.CustomUser"
+AUTHENTICATION_BACKENDS = ['base.emailBackEnd.EmailBackEnd']
 
-MEDIA_ROOT =  os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 # Default primary key field type

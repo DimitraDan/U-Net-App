@@ -1,0 +1,268 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" href="{% static 'css/evaluateModel.css' %}">
+    <link rel="stylesheet" href="{% static 'css/stepper.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <meta charset="UTF-8">
+    <title>Admin Base</title>
+</head>
+
+<body>
+{% include "componets/sideNav.html" %}
+<div id="rightWrapper">
+    <div id="header">
+        <a id="fullPage" href="#">|||</a>
+    </div>
+    <div id="contentWrapper">
+
+        <div class="form-content">
+            <ul id="progressbar">
+                <li class="active">Step 1</li>
+                <li>Step 2</li>
+                <li>Step 3</li>
+                <li>Step 4</li>
+            </ul>
+            <form id="msform" action="/train_evaluated" method="POST">
+                {% csrf_token %}
+
+                <fieldset>
+                    <h2 class="fs-title">Step 1</h2>
+                    <h3 class="fs-subtitle">Choose checkpoint</h3>
+
+                    <select id="checkpoint" name="prediction_checkpoint">
+                        {% for checkpoint in checkpoints %}
+                            <option value={{ checkpoint.file_path }}>checkpoint_{{ checkpoint.epoch }}</option>
+                        {% endfor %}
+                    </select>
+                    <h3 style="padding-top: 50px" class="fs-subtitle">Choose run's name</h3>
+                    <input type="text" name="name" id="runName">
+                    <br>
+
+                    <input type="button" name="next" class="next action-button" onclick="nextTab()"
+                           value="Next"/>
+                </fieldset>
+                <fieldset>
+                    <h2 class="fs-title">Step 2</h2>
+                    <button type="button" onclick="checkAllImages()">Check All</button>
+
+                    <h3 class="fs-subtitle">Upload/Choose images for mask prediction</h3>
+                    <table id="imageTable" class="display">
+                        <thead>
+                        <tr>
+                            <th class="no-sort"></th>
+                            <th class="no-sort">Image</th>
+                            <th class="no-sort">Mask</th>
+
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for item in testImages %}
+                            <tr>
+                                <td>
+                                    <label>
+                                        <input type="checkbox" name="selectedImages"
+                                               value="{{ image.id }}">
+                                    </label>
+                                </td>
+                                <td>
+                                    <img src="{{ item.images.url }}" alt="Image">
+                                </td>
+                                <td>
+                                    <img src="{{ item.masks.url }}" alt="Image">
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                    <br>
+
+                    <input type="file" name="images" multiple>
+
+                    <div id="loadingSpinner" style="display: none;">
+                        <div class="spinner-box">
+                            <div class="blue-orbit leo"></div>
+                            <div class="green-orbit leo"></div>
+                            <div class="red-orbit leo"></div>
+                            <div class="white-orbit w1 leo"></div>
+                            <div class="white-orbit w2 leo"></div>
+                            <div class="white-orbit w3 leo"></div>
+                        </div>
+                    </div>
+                    <div id="loadingBar" style="display: none;">
+                        <div class="loading-progress"></div>
+                    </div>
+
+                    <input type="button" name="previous" class="previous action-button-previous"
+                           onclick="previousTab()" value="Previous"/>
+                    <input type="button" name="next" class="next action-button"
+                           value="Next" onclick="submitForm(this.form)"/>
+                </fieldset>
+
+
+                <fieldset>
+                    <h2 class="fs-title">Step 3</h2>
+                    <h3 class="fs-subtitle">Correct predicted masks</h3>
+
+                    <table id="imageTable" class="display" style="max-font-size: 100px">
+                        <thead>
+                        <tr>
+                            <th></th>
+                            <th class="no-sort">Image</th>
+                            <th class="no-sort">Mask</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody id="step3TableBody"></tbody>
+                    </table>
+
+                    <input type="button" name="previous" class="previous action-button-previous"
+                           onclick="previousTab()" value="Previous"/>
+                    <input type="button" name="next" class="next action-button"
+                           value="Next" onclick="submitCorrectedImages(this.form)"/>
+
+                </fieldset>
+                <fieldset>
+                    <h2 class="fs-title">Step 4</h2>
+                    <h3 class="fs-subtitle">Choose the train images</h3>
+                    <table id="imageTable" class="display" style="max-font-size: 100px">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th class="no-sort">Image</th>
+                            <th class="no-sort">Mask</th>
+                            <th>Updated</th>
+                        </tr>
+                        </thead>
+                        <tbody id="step4TableBody"></tbody>
+                    </table>
+
+                    <div id="loadingSpinnerStep4" style="display: none;">
+                        <div class="spinner-box">
+                            <div class="blue-orbit leo"></div>
+                            <div class="green-orbit leo"></div>
+                            <div class="red-orbit leo"></div>
+                            <div class="white-orbit w1 leo"></div>
+                            <div class="white-orbit w2 leo"></div>
+                            <div class="white-orbit w3 leo"></div>
+                        </div>
+                    </div>
+
+                    <input type="button" name="previous" class="previous action-button-previous"
+                           onclick="previousTab()" value="Previous"/>
+                    <input type="submit" name="submit" class="submit action-button" value="Submit"/>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#imageTable').DataTable({
+            "paging": true,
+            "searching": true,
+            "lengthMenu": [[3, 10, 25, 50, -1], [5, 10, 25, 50, "All"]],
+            "info": true,
+            columnDefs: [
+                {"orderable": false, "targets": 'no-sort'}
+            ]
+        });
+    });
+
+    function submitForm(formElement) {
+        const formData = new FormData(formElement);
+        const loadingSpinnerStep3 = document.getElementById('loadingSpinner');
+        loadingSpinnerStep3.style.display = 'block';
+
+        fetch('/predictMask', {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                const step3TableBody = $('#step3TableBody');
+                step3TableBody.empty(); // Clear existing data
+
+                for (let i = 0; i < data.evaluation.length; i++) {
+                    step3TableBody.append(`
+                            <tr>
+                              <td>${i + 1}</td>
+                              <td><img src="${data.evaluation[i].image}" alt="Image"></td>
+                              <td><img src="${data.evaluation[i].prediction}" alt="Mask"></td>
+                              <td>
+                                <input type="hidden" id="counter" name="counter" value="${data.evaluation.length}">
+                                <input type="hidden" id="x${i + 1}" name="x${i + 1}">
+                                <input type="hidden" id="y${i + 1}" name="y${i + 1}">
+                                <input name="image${i + 1}" type="hidden" value="${data.evaluation[i].image}">
+                                <input name="mask${i + 1}" type="hidden" value="${data.evaluation[i].prediction}">
+                                <div class="canvas-container">
+                                  <canvas onmouseleave="getCoordinates(${i + 1})" id="canvas${i + 1}" class="drawing-canvas"></canvas>
+                                  <button type="button" onclick="restartCanvas('${data.evaluation[i].image}', 'canvas${i + 1}')">Restart
+                                  <i class="fas fa-redo"></i>
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                `);
+                    drawImage(`canvas${i + 1}`, `${data.evaluation[i].image}`)
+                }
+                loadingSpinnerStep3.style.display = 'none';
+                nextTab()
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                loadingSpinnerStep3.style.display = 'none';
+
+            })
+    }
+
+    function submitCorrectedImages(formElement) {
+        const formData = new FormData(formElement);
+        const loadingSpinnerStep4 = document.getElementById('loadingSpinnerStep4');
+        loadingSpinnerStep4.style.display = 'block';
+
+        fetch('/correctMasks', {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                const step4TableBody = $('#step4TableBody');
+                step4TableBody.empty();
+                for (let i = 0; i < data.train_images.length; i++) {
+                    step4TableBody.append(`
+                <tr>
+                    <td>
+                       <input type="checkbox" name="selectedImages" value="${i + 1}">
+                    </td>
+                    <td><img src="${data.train_images[i].image}" alt="Image"></td>
+                    <td><img src="${data.train_images[i].mask}" alt="Mask"></td>
+                    <td>${data.train_images[i].corrected}</td>
+                                <input name="image${i + 1}" type="hidden" value="${data.train_images[i].image}">
+                                <input name="mask${i + 1}" type="hidden" value="${data.train_images[i].mask}">
+                </tr>
+            `);
+                }
+                loadingSpinnerStep4.style.display = 'none';
+                nextTab();
+            });
+    }
+
+</script>
+
+<script src="{% static '/js/evaluateModel.js' %}"></script>
+<script src="{% static '/js/stepper.js' %}"></script>
+</body>
+
+</html>

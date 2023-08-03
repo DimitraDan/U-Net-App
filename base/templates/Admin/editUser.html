@@ -1,12 +1,12 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-          <link rel="stylesheet" href="{% static 'css/editDoctor.css' %}">
-      <meta charset="UTF-8">
+<head>
+    <link rel="stylesheet" href="{% static 'css/editUser.css' %}">
+    <meta charset="UTF-8">
     <title>Admin Base</title>
-  </head>
-  <body>
+</head>
+<body>
 {% include "componets/sideNav.html" %}
 
 {% block content %}
@@ -16,41 +16,69 @@
             <div id="contentWrapper">
 
 
+                <div class="container mt-5">
+                    <div class="row">
+                        <div class="col-lg-4 pb-5">
+                            <!-- Account Sidebar-->
+                            <div class="author-card pb-3">
+                                <div class="author-card-cover"><a class="btn btn-style-1 btn-white btn-sm" href="#"
+                                                                  data-toggle="tooltip" title=""
+                                                                  data-original-title=""><i
+                                        class="fa fa-award text-md"></i></a></div>
+                                <div class="author-card-profile">
+                                    <div class="author-card-avatar"><img
+                                            src="https://i.pinimg.com/236x/4d/a8/bb/4da8bb993057c69a85b9b6f2775c9df2.jpg"
+                                            alt="">
+                                    </div>
+                                    <div class="author-card-details">
+                                        <h5 class="author-card-name text-lg">{{ user.username }}</h5>
+                                        <span class="author-card-position">{{ user.date_joined }}</span>
 
+                                    </div>
+                                </div>
+                            </div>
 
+                            <form style="padding-top: 50px; padding-bottom: 50px" action="/edit_doctor_save"
+                                  method="post" id="contactFrm" name="contactFrm">
+                                {% csrf_token %}
 
-                <form action="/edit_doctor_save" method="post" id="contactFrm" name="contactFrm">
-                {% csrf_token %}
+                                <input type="text" placeholder="username" name="username" class="txt">
 
-                <input type="text"  placeholder="username" value="" name="username" class="txt">
+                                <input type="text" placeholder="username" name="username" class="txt">
+                                <input type="text" placeholder="email" name="email" class="txt">
+                                <input type="password" placeholder="Change Pwd" name="password" class="txt">
+  <input type="checkbox" name="active" id="checkbox">
+  <label for="active-checkbox" class="checkbox"> Active</label>
+                                <br>
 
-                <input type="text"  placeholder="username" value="" name="username" class="txt">
-                <input type="text"  placeholder="email" value="" name="email" class="txt">
-                <input type="password"  placeholder="Change Pwd" value="" name="password" class="txt">
-                <br>
+                                <button type="submit">Update</button>
+                                <input type="hidden" placeholder="user_id" value={{ user.id }} name="user_id"
+                                       class="txt">
 
-                <button type="submit" >Update</button>
-                    <input  type="hidden"  placeholder="user_id" value={{doctor.user.id}} name="user_id" class="txt">
+                            </form>
 
-              </form>
+                            <div class="form-group">
+                                {% if messages %}
+                                    {% for message in messages %}
+                                        {% if message.tags == 'error' %}
+                                            <div class="alert alert-danger" style="margin-top:10px">{{ message }}</div>
+                                        {% endif %}
+                                        {% if message.tags == 'success' %}
+                                            <div class="alert alert-success" style="margin-top:10px">{{ message }}</div>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
 
-              <div class="form-group">
-                {% if messages %}
-                  {% for message in messages %}
-                  {% if message.tags == 'error' %}
-                  <div class="alert alert-danger" style="margin-top:10px">{{ message }}</div>
-                  {% endif %}
-                  {% if message.tags == 'success' %}
-                  <div class="alert alert-success" style="margin-top:10px">{{ message }}</div>
-                  {% endif %}
-                  {% endfor %}
-                {% endif %}
-              </div>
-
+                        </div>
+                    </div>
+                </div>
             </div>
+
+
         </div>
     </div>
 {% endblock %}
 
-  </body>
+</body>
 </html>

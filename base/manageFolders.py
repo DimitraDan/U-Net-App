@@ -15,6 +15,7 @@ from PIL import Image
 def insertToFolder(folderImage, folderMask, image, mask):
     _, _, imageFiles = next(os.walk(folderImage))
     _, _, maskFiles = next(os.walk(folderMask))
+    print(folderImage)
 
     # determine file extension of the input image
     if image.startswith('data:image/jpeg;base64,'):

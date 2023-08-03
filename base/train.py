@@ -18,8 +18,8 @@ from base.iou_score import *
 from base.manageFolders import deleteFiles
 from base.models import Run, TrainLoss, Validation, Checkpoint, FailedRun
 
-dir_img = "media/selected/image/train/"
-dir_mask = "media/selected/mask/train/"
+dir_img = "media/image/run/"
+dir_mask = "media/mask/run/"
 dir_checkpoint = "base/checkpoints/"
 
 
