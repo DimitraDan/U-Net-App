@@ -1,0 +1,157 @@
+/* Center align the content of the form */
+.form {
+  text-align: center;
+}
+
+/* Styling for input fields with the class 'txt' */
+.txt {
+  display: block;
+  margin-bottom: 10px;
+  padding: 5px;
+  width: 200px;
+}
+
+/* Styling for the author widget */
+.widget-author {
+  margin-bottom: 58px;
+}
+
+/* Styling for the author card container */
+.author-card {
+  position: relative;
+  padding-bottom: 48px;
+  background-color: #fff;
+  box-shadow: 0 12px 20px 1px rgba(64, 64, 64, .09);
+  background-size: cover;
+  background-position: center;
+}
+
+/* Styling for the author card cover image */
+.author-card .author-card-cover {
+  position: relative;
+  width: 100%;
+  height: 100px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+/* Overlay style for the author card cover image */
+.author-card .author-card-cover::after {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  content: '';
+  opacity: 0.5;
+}
+
+/* Styling for the button inside the author card cover image */
+.author-card .author-card-cover > .btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 0 10px;
+}
+
+/* Styling for the author card profile section */
+.author-card .author-card-profile {
+  display: table;
+  position: relative;
+  margin-top: -22px;
+  padding-right: 15px;
+  padding-bottom: 16px;
+  padding-left: 20px;
+  z-index: 5;
+}
+
+/* Styling for the avatar and details inside the author card profile */
+.author-card .author-card-profile .author-card-avatar, .author-card .author-card-profile .author-card-details {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+/* Styling for the avatar inside the author card profile */
+.author-card .author-card-profile .author-card-avatar {
+  width: 85px;
+  border-radius: 50%;
+  box-shadow: 0 8px 20px 0 rgba(0, 0, 0, .15);
+  overflow: hidden;
+}
+
+/* Styling for the image inside the avatar */
+.author-card .author-card-profile .author-card-avatar > img {
+  display: block;
+  width: 100%;
+}
+
+/* Styling for the details section inside the author card profile */
+.author-card .author-card-profile .author-card-details {
+  padding-top: 20px;
+  padding-left: 15px;
+}
+
+/* Styling for the author name inside the author card profile */
+.author-card .author-card-profile .author-card-name {
+  margin-bottom: 2px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+/* Styling for the author position inside the author card profile */
+.author-card .author-card-profile .author-card-position {
+  display: block;
+  color: #8c8c8c;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Styling for the author info section */
+.author-card .author-card-info {
+  margin-bottom: 0;
+  padding: 0 25px;
+  font-size: 13px;
+}
+
+/* Styling for the author social bar wrap */
+.author-card .author-card-social-bar-wrap {
+  position: absolute;
+  bottom: -18px;
+  left: 0;
+  width: 100%;
+}
+
+/* Styling for the author social bar */
+.author-card .author-card-social-bar-wrap .author-card-social-bar {
+  display: table;
+  margin: auto;
+  background-color: #fff;
+  box-shadow: 0 12px 20px 1px rgba(64, 64, 64, .11);
+}
+
+/* Styling for the white button with style-1 class */
+.btn-style-1.btn-white {
+  background-color: #fff;
+}
+
+/* Styling for the list group item icon */
+.list-group-item i {
+  display: inline-block;
+  margin-top: -1px;
+  margin-right: 8px;
+  font-size: 1.2em;
+  vertical-align: middle;
+}
+
+/* Styling for the margin right of 1rem class */
+.mr-1, .mx-1 {
+  margin-right: .25rem !important;
+}
+
+.checkbox {
+    color: #8c8c8c;
+  font-size: 12px;
+  font-weight: 600;
+}

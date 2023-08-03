@@ -1,5 +1,6 @@
 import csv
-import json
+import uuid
+
 from django.conf import settings
 
 from django.contrib import messages
@@ -211,7 +212,7 @@ def updateRunProcess(request, run_id):
         "checkpoints": checkpoints,
         "testImages": testImages
     }
-    return render(request, "Admin/evaluateModel.html", content)
+    return render(request, "Admin/updateModelPage1.html", content)
 
 
 @login_required(login_url="/login/")
@@ -231,7 +232,7 @@ def trainSelected(request):
                     os.path.join(settings.MEDIA_ROOT, obj.images.name),
                     (
                         os.path.join(
-                            settings.MEDIA_ROOT + "/selected/image/train/",
+                            settings.MEDIA_ROOT + "/image/run/",
                             str(obj.id) + ".jpeg",
                         )
                     ),
@@ -240,7 +241,7 @@ def trainSelected(request):
                     os.path.join(settings.MEDIA_ROOT, obj.masks.name),
                     (
                         os.path.join(
-                            settings.MEDIA_ROOT + "/selected/mask/train/",
+                            settings.MEDIA_ROOT + "/mask/run/",
                             str(obj.id) + "_Segmentation.png",
                         )
                     ),
@@ -259,22 +260,23 @@ def trainEvaluated(request):
     if request.method != "POST":
         return HttpResponse("<h2>Method Not Allowed</h2>")
     else:
-        selected = request.POST.getlist("selection")
-        checkpoint_path = request.POST.get("checkpoint")
-        dir_image = os.path.join(settings.MEDIA_ROOT, "selected/image/train/")
-        dir_mask = os.path.join(settings.MEDIA_ROOT, "selected/mask/train/")
+        selected_images_index = request.POST.getlist("selectedImages")
+        checkpoint_path = request.POST.get("prediction_checkpoint")
+
+        dir_image = os.path.join(settings.MEDIA_ROOT, "image/run/")
+        dir_mask = os.path.join(settings.MEDIA_ROOT, "mask/run/")
 
         # try:
-        for obj in selected:
-            obj = obj.replace("'", '"')
-            json_obj = json.loads(obj)
-            insertToFolder(dir_image, dir_mask, json_obj["image"], json_obj["prediction"])
+        for index in selected_images_index:
+            image = request.POST.get("image" + index)
+            mask = request.POST.get("mask" + index)
+            insertToFolder(dir_image, dir_mask, image, mask)
 
-        training(model_path=checkpoint_path, request=request)
+        training(model_path=settings.MEDIA_ROOT + "/" + checkpoint_path, request=request)
         # except Exception as e:
         #     print(f"Error for object : {e}")
 
-        return HttpResponseRedirect("trainModel")
+        return HttpResponseRedirect("trainList")
 
 
 @login_required(login_url="/login/")
@@ -306,7 +308,6 @@ def predictMask(request):
         return JsonResponse(context)
 
 
-
 @login_required(login_url="/login/")
 @user_passes_test(lambda user: user.user_type == "1")
 def update_model(request):
@@ -319,98 +320,39 @@ def update_model(request):
 
 @login_required(login_url="/login/")
 @user_passes_test(lambda user: user.user_type == "1")
-def report(request):
+def correctMasks(request):
     if request.method == "POST":
-        results = []
-        updated_results = []
+        train_images = []
         counter = int(request.POST.get('counter'))
-        if request.POST.get("counter_updated") is None:
-            updated_counter = 0
-        else:
-            updated_counter = int(request.POST.get("counter_updated"))
-
-        for i in range(1, updated_counter + 1):
-            updated_results.append({"image": request.POST.get("updated_prediction_img" + str(i)),
-                                    "prediction": request.POST.get("updated_prediction_mask" + str(i))})
 
         for i in range(1, counter + 1):
-            save = request.POST.get(str(i))
-            if save is None:
-                save = "NO"
-            results.append(
-                {
-                    "image": request.POST.get("image" + str(i)),
-                    "prediction": request.POST.get("prediction" + str(i)),
-                    "x_points": request.POST.get("x_points" + str(i)),
-                    "y_points": request.POST.get("y_points" + str(i)),
-                    "save": save,
-                }
-            )
+            image = request.POST.get("image" + str(i))
+            mask = request.POST.get("mask" + str(i))
+            x_points = request.POST.get("x" + str(i))
+            y_points = request.POST.get("y" + str(i))
+            corrected = False
 
-        for result in results:
-            if (
-                    result["x_points"] is not None
-                    and result["y_points"] is not None
-                    and result["x_points"] != ""
-                    and result["y_points"] != ""
-            ):
+            if x_points is not None and x_points != "":
                 mask = createMask(
                     request,
-                    result["image"],
-                    result["x_points"],
-                    result["y_points"],
-                    result["save"],
+                    image,
+                    x_points,
+                    y_points,
                 )
-                updated_results.append({"image": result["image"], "prediction": mask})
-                results.remove(result)
+                corrected = True
 
-        if "train" in request.POST:
-            try:
-                deleteFiles(os.path.join(settings.MEDIA_ROOT, "selected/image/train"))
-                deleteFiles(os.path.join(settings.MEDIA_ROOT, "selected/mask/train"))
-            except:
-                pass
-
-            reported = request.POST.getlist("reported")
-            selected = request.POST.getlist("selected")
-
-            dir_image = "media/selected/image/train/"
-            dir_prediction = "media/selected/mask/train/"
-
-            for selection_str in selected:
-                fixed_json_str = selection_str.replace("'", '"')
-                selection_json = json.loads(fixed_json_str)
-                insertToFolder(
-                    dir_image,
-                    dir_prediction,
-                    selection_json["image"],
-                    selection_json["prediction"],
-                )
-
-            for report in reported:
-                fixed_json_str = report.replace("'", '"')
-                selection_json = json.loads(fixed_json_str)
-                insertToFolder(
-                    dir_image,
-                    dir_prediction,
-                    selection_json["image"],
-                    selection_json["mask"],
-                )
-                updated_results.append(
-                    {"image": selection_json["image"], "mask": selection_json["mask"]}
-                )
-
-            training(request=request)
-            messages.success(request, "Training finished succesfully!")
+            train_images.append({
+                "image": image,
+                "mask": mask,
+                "x_points": x_points,
+                "y_points": y_points,
+                "corrected": corrected
+            })
 
         content = {
-            "updated_size": len(updated_results),
-            "updated_evaluation": updated_results,
-            "evaluation": results,
-            "size": len(results),
+            "train_images": train_images,
         }
-
-    return render(request, "Admin/evaluateModel.html", content)
+        return JsonResponse(content)
 
 
 def modifyDoctors(request):

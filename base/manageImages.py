@@ -70,21 +70,32 @@ def convert_image(image_file, output_format):
     filename, extension = os.path.splitext(image_file.name)
     return ContentFile(output_stream.getvalue(), name=filename + '.' + output_format.lower())
 
-
-def createMask(request, image, x_points, y_points, save='NO'):
+def createMask(request, image, x_points, y_points, is_circle=False, save='NO'):
     img = readb64(image)
-    w, h, c = img.shape
+    h, w, c = img.shape
 
     MASK_HEIGHT = h
     MASK_WIDTH = w
     all_points = []
     for i, x in enumerate(x_points.split(",")):
         if x != '':
-            all_points.append([int(x), int(y_points.split(',')[i])])
+            x_float = float(x)
+            y_float = float(y_points.split(',')[i])
+            x_int = int(round(x_float))
+            y_int = int(round(y_float))
+            all_points.append([x_int, y_int])
 
-    arr = np.array(all_points)
-    mask = np.zeros((MASK_WIDTH, MASK_HEIGHT))
-    mask = cv2.fillPoly(mask, [arr], color=(255))
+    mask = np.zeros((MASK_HEIGHT, MASK_WIDTH), dtype=np.uint8)
+
+    if is_circle and len(all_points) >= 2:
+        # For circles, we need at least two points to define the diameter
+        center = tuple(all_points[0])
+        radius = int(np.linalg.norm(np.array(all_points[0]) - np.array(all_points[1])))
+        cv2.circle(mask, center, radius, 255, -1)
+    else:
+        arr = np.array(all_points, dtype=np.int32)
+        cv2.fillPoly(mask, [arr], color=(255))
+
     mask = arrayTo64Mask(mask)
 
     if save == 'YES':
@@ -96,3 +107,7 @@ def createMask(request, image, x_points, y_points, save='NO'):
         ).save()
 
     return mask
+
+
+
+
