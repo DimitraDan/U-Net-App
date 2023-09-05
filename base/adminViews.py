@@ -187,7 +187,6 @@ def deleteRun(request, run_id):
 @user_passes_test(lambda user: user.user_type == "1")
 def train_results(request, run_id):
     run = Run.objects.get(id=run_id)
-    validationImages = MultipleImage.objects.filter(purpose="test")
 
     context = {
         'run': run,
@@ -205,11 +204,24 @@ def train_results(request, run_id):
 def updateRunProcess(request, run_id):
     run = Run.objects.get(id=run_id)
     checkpoints = Checkpoint.objects.filter(run=run)
+    reportImages = MultipleImage.objects.filter(purpose="report")
     testImages = MultipleImage.objects.filter(purpose="test")
+    validationRunImages = Run.objects.get(id=run_id).validation_loss.all()
+    trainImages = []
+
+    for image in validationRunImages:
+        trainImages.append({
+            "image": image.image,
+            "id": image.id,
+            "mask": image.pred_mask,
+            "purpose": "train"
+        })
 
     content = {
         "run": run,
         "checkpoints": checkpoints,
+        "reportImages": reportImages,
+        "trainImages": trainImages,
         "testImages": testImages
     }
     return render(request, "Admin/updateModelPage1.html", content)
@@ -222,10 +234,6 @@ def trainSelected(request):
         selected_images = request.POST.getlist("selectedImages")
 
         objs = MultipleImage.objects.filter(id__in=selected_images)
-
-        dir_image = "media/selected/image/train/"
-        dir_mask = "media/selected/mask/train/"
-
         try:
             for obj in objs:
                 shutil.copyfile(
@@ -269,7 +277,12 @@ def trainEvaluated(request):
         # try:
         for index in selected_images_index:
             image = request.POST.get("image" + index)
+
+            if image.startswith("/media/image/runImage/"):
+                image = imageToStr(PIL_Image.open(os.getcwd() + image), 'png')
+
             mask = request.POST.get("mask" + index)
+
             insertToFolder(dir_image, dir_mask, image, mask)
 
         training(model_path=settings.MEDIA_ROOT + "/" + checkpoint_path, request=request)
@@ -287,18 +300,28 @@ def predictMask(request):
 
     else:
         evaluation = []
-        imageFiles = request.FILES.getlist("images")
+        uploadedImages = request.FILES.getlist("uploadedImages")
         checkpoint = request.POST.get("prediction_checkpoint")
-        selected_images = request.POST.getlist("selectedImages")
+        reportImagesId = request.POST.getlist("reportImages")
+        testImagesId = request.POST.getlist("testImages")
+        trainImagesId = request.POST.getlist("trainImages")
 
-        for file in imageFiles:
+        for file in uploadedImages:
             imagep = PIL_Image.open(file)
             prediction = predict(imagep, model_path=f'media/{checkpoint}')
             evaluation.append({"image": imageToStr(imagep), "prediction": imageToStr(prediction)})
 
-        for image in selected_images:
-            prediction = predict(image, model_path=f'media/{checkpoint}')
-            evaluation.append({"image": imageToStr(image), "prediction": imageToStr(prediction)})
+        for report_id in reportImagesId:
+            image = MultipleImage.objects.get(id=report_id)
+            evaluation.append({"image": image.images.url, "prediction": image.masks.url})
+
+        for train_id in trainImagesId:
+            image = Validation.objects.get(id=train_id)
+            evaluation.append({"image": image.image.url, "prediction": image.pred_mask.url})
+
+        for test_id in testImagesId:
+            image = MultipleImage.objects.get(id=test_id)
+            evaluation.append({"image": image.images.url, "prediction": image.masks.url})
 
         context = {
             "evaluation": evaluation,

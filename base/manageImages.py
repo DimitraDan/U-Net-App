@@ -1,6 +1,5 @@
 import base64
 import io
-import os
 from base64 import b64encode
 from io import BytesIO
 
@@ -10,9 +9,13 @@ from PIL import Image as PIL_Image
 from django.core.files.base import ContentFile
 
 from base.models import *
+from medicalApp import settings
 
 
 def readb64(encoded_image):
+    if ',' not in encoded_image:
+        raise ValueError("Invalid encoded image format")
+
     header, data = encoded_image.split(',', 1)
     image_data = base64.b64decode(data)
     np_array = np.frombuffer(image_data, np.uint8)
@@ -39,14 +42,20 @@ def base64_file(data, name=None):
     return ContentFile(base64.b64decode(_img_str), name='{}.{}'.format(name, ext))
 
 
-def imageToStr(img):
+def imageToStr(img, format='jpeg'):
+    supported_formats = ['jpeg', 'png']
+
+    if format not in supported_formats:
+        raise ValueError(f"Unsupported image format: {format}")
+
     with io.BytesIO() as buf:
-        img.save(buf, 'jpeg')
+        img.save(buf, format)
         image_bytes = buf.getvalue()
+
     encoded = b64encode(image_bytes).decode()
-    mime = 'image/jpeg;'
-    img = "data:%sbase64,%s" % (mime, encoded)
-    return img
+    mime = f'image/{format};'
+    img_data = f"data:{mime}base64,{encoded}"
+    return img_data
 
 
 def convert_image(image_file, output_format):
@@ -70,9 +79,15 @@ def convert_image(image_file, output_format):
     filename, extension = os.path.splitext(image_file.name)
     return ContentFile(output_stream.getvalue(), name=filename + '.' + output_format.lower())
 
+
 def createMask(request, image, x_points, y_points, is_circle=False, save='NO'):
-    img = readb64(image)
-    h, w, c = img.shape
+    if image.startswith('data'):
+        img = readb64(image)
+    else:
+        current_directory = os.getcwd()
+        img = PIL_Image.open(current_directory + image)
+
+    h, w = img.size
 
     MASK_HEIGHT = h
     MASK_WIDTH = w
@@ -107,7 +122,3 @@ def createMask(request, image, x_points, y_points, is_circle=False, save='NO'):
         ).save()
 
     return mask
-
-
-
-

@@ -1,10 +1,6 @@
-import os, shutil
+import shutil
 import cv2
-import base64
 import numpy as np
-import io
-from base.manageImages import convert_image, base64_file
-from PIL import Image
 
 import os
 import base64
@@ -15,7 +11,6 @@ from PIL import Image
 def insertToFolder(folderImage, folderMask, image, mask):
     _, _, imageFiles = next(os.walk(folderImage))
     _, _, maskFiles = next(os.walk(folderMask))
-    print(folderImage)
 
     # determine file extension of the input image
     if image.startswith('data:image/jpeg;base64,'):

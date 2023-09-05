@@ -13,7 +13,7 @@ from base.predict import predict
 def doctorHome(request):
     user = request.user
     context = {
-
+        "user": user
     }
     return render(request, "doctorHome.html", {"context": context})
 
@@ -22,26 +22,22 @@ def doctorHome(request):
 @user_passes_test(lambda user: user.user_type == '2')
 def segmentation(request):
     if 'submit' in request.POST:
-        try:
-            file = request.FILES['fileInput']
-            data = file.read()
-            encoded = b64encode(data).decode()
-            mime = 'image/jpeg;'
-            imagep = PIL_Image.open(file)
-            mask = predict(imagep)
-            image = "data:%sbase64,%s" % (mime, encoded)
-            imgAndMask = PIL_Image.composite(imagep.convert('RGB'), mask.convert('RGB'), mask)
+        file = request.FILES['fileInput']
+        data = file.read()
+        encoded = b64encode(data).decode()
+        mime = 'image/jpeg;'
+        imagep = PIL_Image.open(file)
+        mask = predict(imagep)
+        image = "data:%sbase64,%s" % (mime, encoded)
+        imgAndMask = PIL_Image.composite(imagep.convert('RGB'), mask.convert('RGB'), mask)
 
-            context = {
-                "imageAndMask": imageToStr(imgAndMask),
-                "mask": imageToStr(mask),
-                "image": image,
-            }
+        context = {
+            "imageAndMask": imageToStr(imgAndMask),
+            "mask": imageToStr(mask),
+            "image": image,
+        }
 
-            return render(request, 'carouselimages.html', context)
-        except:
-            messages.error(request, "Failed to upload")
-            return HttpResponseRedirect(reverse("segmentation"))
+        return render(request, 'carouselimages.html', context)
 
     if 'submitReport' in request.POST:
         all_points_x = request.POST.get('x')
@@ -71,13 +67,7 @@ def segmentation(request):
 @user_passes_test(lambda user: user.user_type == '2')
 def patients(request):
     user = request.user
-    # patients = user.doctor.patient.all() 
-    # logging.warning(patients) 
-
     content = {
         "user": user,
-        # "patients" : patients
-        # "patientMoreInfo" : patientMoreInfo
     }
-
     return render(request, 'patients.html', content)

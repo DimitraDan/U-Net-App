@@ -44,15 +44,6 @@
                     <label for="Upload masks:"><b>Mask</b>
                         <input type="file" id="maskFiles" name="maskFiles" accept="image/*" multiple required>
                     </label>
-                    <script>
-                        const input = document.querySelector('input[type="file"]');
-                        input.addEventListener('change', () => {
-                            if (input.files.length > 100) {
-                                alert('You can only upload a maximum of 100 images');
-                                input.value = '';
-                            }
-                        });
-                    </script>
                     <br>
                     <button type="submit" name="submitImage" class="btn">Submit</button>
                     <button type="button" class="btn cancel" onclick="closeForm()">Close</button>

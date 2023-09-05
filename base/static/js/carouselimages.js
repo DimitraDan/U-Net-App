@@ -1,3 +1,20 @@
+document.addEventListener("DOMContentLoaded", function () {
+    const openPopupButton = document.getElementById("openPopupButton");
+    const closePopupButton = document.getElementById("closePopupButton");
+    const popupContainer = document.getElementById("popupContainer");
+    const overlay = document.getElementById("overlay"); // Get the overlay element
+
+    openPopupButton.addEventListener("click", function () {
+        popupContainer.style.display = "flex";
+        overlay.style.display = "block"; // Show the overlay
+    });
+
+    closePopupButton.addEventListener("click", function () {
+        popupContainer.style.display = "none";
+        overlay.style.display = "none"; // Hide the overlay
+    });
+});
+
 
 var all_points_x = []; 
 var all_points_y = []; 

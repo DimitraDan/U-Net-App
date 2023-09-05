@@ -41,7 +41,3 @@ function openForm() {
 function closeForm() {
     document.getElementById("myForm").style.display = "none";
 }
-
-document.getElementById("closeBtn").addEventListener("click", function () {
-    closeForm();
-});

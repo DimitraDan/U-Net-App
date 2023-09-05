@@ -3,6 +3,7 @@ import torch
 import torch.nn.functional as F
 from PIL import Image
 from base.data_loading import BasicDataset
+from unet.unetModel import UNet
 
 
 def predict_img(net,
@@ -44,16 +45,15 @@ def mask_to_image(mask: np.ndarray, mask_values):
 
 
 def predict(image, model_path='/base/MODEL.pth'):
-    net = torch.hub.load('milesial/Pytorch-UNet', 'unet_carvana', pretrained=False, scale=0.5)
+    net = UNet(n_channels=3, n_classes=2, bilinear=False)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     net.to(device=device)
-    try:
-        state_dict = torch.load("medicalApp/" + model_path, map_location=device)
-    except:
-        state_dict = torch.load(model_path, map_location=device)
+    state_dict = torch.load("base/MODEL.pth", map_location=device)
 
-    mask_values = state_dict.pop('mask_values')
     net.load_state_dict(state_dict)
+
+    mask_values = state_dict.pop('mask_values', [0, 1])
+
     mask = predict_img(net=net,
                        full_img=image,
                        scale_factor=0.5,
@@ -61,4 +61,5 @@ def predict(image, model_path='/base/MODEL.pth'):
                        device=device)
 
     result = mask_to_image(mask, mask_values)
+
     return result

@@ -16,8 +16,8 @@
 
 <body>
 {% include "componets/sideNav.html" %}
-{% block content %}
 
+{% block content %}
     <div id="rightWrapper">
         <div id="header">
             <a id="fullPage" href="#">|||</a>
@@ -100,7 +100,12 @@
 
                             <table id="imageTable" class="display" style="max-font-size: 100px">
                                 <thead>
-                                <button type="button" onclick="checkAllImages()">Check All</button>
+                                <div>
+                                    <label for="numberOfImages">Number of Images:</label>
+                                    <input type="number" id="numberOfImages" min="1">
+
+                                    <button type="button" id="checkAllBtn">Check</button>
+                                </div>
 
                                 <tr>
                                     <th class="no-sort">Select</th>
@@ -138,103 +143,6 @@
             </div>
         </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-    <script>
-        $(document).ready(function () {
-            $('#run-table').DataTable({
-                "paging": true,
-                "searching": true,
-                "lengthMenu": [[3, 10, 25, 50, -1], [5, 10, 25, 50, "All"]],
-                "info": true,
-                columnDefs: [
-                    {"orderable": false, "targets": 'no-sort'}
-                ]
-            });
-        });
-
-        $(document).ready(function () {
-            $('#imageTable').DataTable({
-                "paging": true,
-                "searching": true,
-
-                "lengthMenu": [[3, 10, 25, 50, -1], [5, 10, 25, 50, "All"]],
-                "info": true,
-                "columnDefs": [
-                    {"orderable": false, "targets": "no-sort"}
-                ]
-            });
-        });
-
-function submitForm(event) {
-    event.preventDefault();
-
-    // Collect form data
-    const formData = new FormData(event.target);
-
-    // Get the original DataTable
-    const originalTable = $('#imageTable').DataTable();
-
-    // Iterate over each page of the original table
-    for (let page = 0; page < originalTable.page.info().pages; page++) {
-        // Go to the specific page
-        originalTable.page(page).draw(false);
-
-        // Get all the checkboxes on the current page
-        const checkboxes = originalTable.column(0).nodes().to$().find('input[name="selectedImages"]');
-        checkboxes.each(function () {
-            if (this.checked) {
-                formData.append('selectedImages', this.value);
-            }
-        });
-    }
-
-    $.ajax({
-        url: '/train_selected',
-        type: 'POST',
-        data: formData,
-        contentType: false,
-        processData: false,
-        success: function (response) {
-            // Handle the response from the backend if needed
-            console.log(response);
-        },
-        error: function (error) {
-            // Handle any errors that occur during the form submission
-            console.error(error);
-        }
-    });
-}
-
-function checkAllImages() {
-    const originalTable = $('#imageTable').DataTable();
-    const checkboxes = originalTable.column(0).nodes().to$().find('input[name="selectedImages"]');
-
-    checkboxes.prop('checked', true); // Check all checkboxes on the current page
-
-    // Loop through each page and check all checkboxes
-    for (let i = 1; i < originalTable.page.info().pages; i++) {
-        originalTable.page(i).draw(false); // Go to the specific page
-        const pageCheckboxes = originalTable.column(0).nodes().to$().find('input[name="selectedImages"]');
-        pageCheckboxes.prop('checked', true); // Check all checkboxes on the current page
-    }
-
-    checkboxes.each(function () {
-        toggleCheckmark(this);
-    });
-}
-
-function toggleCheckmark(checkbox) {
-    const checkmark = checkbox.parentNode.querySelector('.checkmark');
-    checkmark.style.display = checkbox.checked ? 'inline-block' : 'none';
-}
-
-
-
-    </script>
-
 {% endblock %}
 
 <script src="{% static 'js/trainList.js' %}"></script>

@@ -17,6 +17,7 @@ from base.evaluate import evaluate
 from base.iou_score import *
 from base.manageFolders import deleteFiles
 from base.models import Run, TrainLoss, Validation, Checkpoint, FailedRun
+from unet.unetModel import UNet
 
 dir_img = "media/image/run/"
 dir_mask = "media/mask/run/"
@@ -188,10 +189,10 @@ def training(model_path="base/MODEL.pth", request=None):
     if request.FILES.get("file") is not None:
         model_path = request.FILES.get("file")
 
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    device = torch.device('cuda')
     logging.info(f'Using device {device}')
 
-    model = torch.hub.load('milesial/Pytorch-UNet', 'unet_carvana', pretrained=False, scale=0.5)
+    model = UNet(n_channels=3, n_classes=2, bilinear=False)
     model.to(device=device)
 
     state_dict = torch.load(model_path, map_location=device)
@@ -215,27 +216,15 @@ def training(model_path="base/MODEL.pth", request=None):
             val_percent=0.1,
             save_checkpoint=True,
             img_scale=0.5,
-            amp=False,
+            amp=True,
             weight_decay=1e-8,
         )
-        # Training completed successfully
         run.status = 'FINISHED'
         run.save()
     except KeyboardInterrupt or Exception as e:
-        checkpoint_uuid = uuid.uuid4()
-
         run.status = 'FAILED'
         run.save()
         print(f"Training failed: {str(e)}")
-
-        # Create FailedRun instance
-        failed_run = FailedRun.objects.create(
-            run=run,
-            model_path=f'{dir_checkpoint}/failed_run_{checkpoint_uuid}.pth',
-            optimizer_state_path=f'{dir_checkpoint}/optimizer_state_{checkpoint_uuid}.pth'
-        )
-        failed_run.image_files.set(run.image_files.all())  # Copy image files from the failed run
-        return failed_run
     finally:
         deleteFiles(dir_img)
         deleteFiles(dir_mask)

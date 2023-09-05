@@ -37,45 +37,64 @@
                                     </div>
                                 </div>
                             </div>
+                            <br/>
+                            <br/>
+                            <br/>
 
-                            <form style="padding-top: 50px; padding-bottom: 50px" action="/edit_doctor_save"
-                                  method="post" id="contactFrm" name="contactFrm">
-                                {% csrf_token %}
+                            <table>
+                                <thead>
+                                <tr>
+                                    <th colspan="2">Update User</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td colspan="2">
+                                        <form action="/edit_doctor_save" method="post" id="contactFrm"
+                                              name="contactFrm">
+                                            {% csrf_token %}
 
-                                <input type="text" placeholder="username" name="username" class="txt">
-
-                                <input type="text" placeholder="username" name="username" class="txt">
-                                <input type="text" placeholder="email" name="email" class="txt">
-                                <input type="password" placeholder="Change Pwd" name="password" class="txt">
-  <input type="checkbox" name="active" id="checkbox">
-  <label for="active-checkbox" class="checkbox"> Active</label>
-                                <br>
-
-                                <button type="submit">Update</button>
-                                <input type="hidden" placeholder="user_id" value={{ user.id }} name="user_id"
-                                       class="txt">
-
-                            </form>
-
-                            <div class="form-group">
-                                {% if messages %}
-                                    {% for message in messages %}
-                                        {% if message.tags == 'error' %}
-                                            <div class="alert alert-danger" style="margin-top:10px">{{ message }}</div>
-                                        {% endif %}
-                                        {% if message.tags == 'success' %}
-                                            <div class="alert alert-success" style="margin-top:10px">{{ message }}</div>
-                                        {% endif %}
-                                    {% endfor %}
-                                {% endif %}
-                            </div>
-
+                                            <input type="text" placeholder="username" name="username" class="txt">
+                                            <input type="text" placeholder="email" name="email" class="txt">
+                                            <input type="password" placeholder="Change Pwd" name="password" class="txt">
+                                            <input type="checkbox" name="active" id="checkbox">
+                                            <label for="checkbox" class="checkbox"> Active</label>
+                                            <br>
+                                            <br>
+                                            <button type="submit">Submit</button>
+                                            <input type="hidden" placeholder="user_id" value="{{ user.id }}"
+                                                   name="user_id" class="txt">
+                                        </form>
+                                    </td>
+                                </tr>
+                                </tbody>
+                                <tfoot>
+                                <tr>
+                                    <td colspan="2">
+                                        <div class="form-group">
+                                            {% if messages %}
+                                                {% for message in messages %}
+                                                    {% if message.tags == 'error' %}
+                                                        <div class="alert alert-danger"
+                                                             style="margin-top:10px">{{ message }}</div>
+                                                    {% endif %}
+                                                    {% if message.tags == 'success' %}
+                                                        <div class="alert alert-success"
+                                                             style="margin-top:10px">{{ message }}</div>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tfoot>
+                            </table>
                         </div>
                     </div>
                 </div>
+
+
             </div>
-
-
         </div>
     </div>
 {% endblock %}
