@@ -21,10 +21,7 @@
                         <div class="col-lg-4 pb-5">
                             <!-- Account Sidebar-->
                             <div class="author-card pb-3">
-                                <div class="author-card-cover"><a class="btn btn-style-1 btn-white btn-sm" href="#"
-                                                                  data-toggle="tooltip" title=""
-                                                                  data-original-title=""><i
-                                        class="fa fa-award text-md"></i></a></div>
+                                <div class="author-card-cover"></div>
                                 <div class="author-card-profile">
                                     <div class="author-card-avatar"><img
                                             src="https://i.pinimg.com/236x/4d/a8/bb/4da8bb993057c69a85b9b6f2775c9df2.jpg"
@@ -54,25 +51,28 @@
                                               name="contactFrm">
                                             {% csrf_token %}
 
-                                            <input type="text" placeholder="username" name="username" class="txt">
-                                            <input type="text" placeholder="email" name="email" class="txt">
+                                            <input type="text" value={{ user.username }} placeholder="username"
+                                                   name="username" class="txt">
+                                            <input type="text" value={{ user.email }} placeholder="email" name="email"
+                                                   class="txt">
                                             <input type="password" placeholder="Change Pwd" name="password" class="txt">
-                                            <input type="checkbox" name="active" id="checkbox">
-                                            <label for="checkbox" class="checkbox"> Active</label>
+                                            <input type="checkbox" {% if user.is_active %}checked{% endif %}
+                                                   name="active" id="active_checkbox">
+                                            <label for="active_checkbox" class="checkbox">Active</label>
+                                            <input type="hidden" placeholder="user_id" value="{{ user.id }}"
+                                                   name="user_id" class="txt">
                                             <br>
                                             <br>
                                             <button type="submit">Submit</button>
-                                            <input type="hidden" placeholder="user_id" value="{{ user.id }}"
-                                                   name="user_id" class="txt">
                                         </form>
                                     </td>
                                 </tr>
                                 </tbody>
                                 <tfoot>
+                                {% if messages %}
                                 <tr>
                                     <td colspan="2">
                                         <div class="form-group">
-                                            {% if messages %}
                                                 {% for message in messages %}
                                                     {% if message.tags == 'error' %}
                                                         <div class="alert alert-danger"
@@ -83,16 +83,18 @@
                                                              style="margin-top:10px">{{ message }}</div>
                                                     {% endif %}
                                                 {% endfor %}
-                                            {% endif %}
                                         </div>
                                     </td>
                                 </tr>
-                                </tfoot>
+                                {% endif %}
+
                             </table>
+                            <br>
+                            <br>
+                            <br>
                         </div>
                     </div>
                 </div>
-
 
             </div>
         </div>

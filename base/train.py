@@ -16,7 +16,7 @@ from base.data_loading import BasicDataset, CarvanaDataset
 from base.evaluate import evaluate
 from base.iou_score import *
 from base.manageFolders import deleteFiles
-from base.models import Run, TrainLoss, Validation, Checkpoint, FailedRun
+from base.models import Run, TrainLoss, Validation, Checkpoint
 from unet.unetModel import UNet
 
 dir_img = "media/image/run/"

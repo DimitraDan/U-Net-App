@@ -12,40 +12,53 @@ def insertToFolder(folderImage, folderMask, image, mask):
     _, _, imageFiles = next(os.walk(folderImage))
     _, _, maskFiles = next(os.walk(folderMask))
 
-    # determine file extension of the input image
+    # Handle the image input
     if image.startswith('data:image/jpeg;base64,'):
-        ext = '.jpeg'
-        image_data = image.replace('data:image/jpeg;base64,', '')
+        image_data = image.split(',', 1)[1]  # Extract base64 data
+        # Add padding if missing
+        while len(image_data) % 4 != 0:
+            image_data += '='
+        binary_img_data = base64.b64decode(image_data)  # Convert base64 to binary data
     elif image.startswith('data:image/png;base64,'):
-        ext = '.png'
-        image_data = image.replace('data:image/png;base64,', '')
+        image_data = image.split(',', 1)[1]  # Extract base64 data
+        # Add padding if missing
+        while len(image_data) % 4 != 0:
+            image_data += '='
+        binary_img_data = base64.b64decode(image_data)  # Convert base64 to binary data
+    elif image.endswith(('.jpeg', '.jpg', '.png')):
+        with open('./'+image, 'rb') as file:
+            binary_img_data = file.read()
     else:
         raise ValueError('Unsupported image format')
 
-    # determine file extension of the mask image
+    # Handle the mask input
     if mask.startswith('data:image/jpeg;base64,'):
-        mask_data = mask.replace('data:image/jpeg;base64,', '')
+        mask_data = mask.split(',', 1)[1]  # Extract base64 data
+        # Add padding if missing
+        while len(mask_data) % 4 != 0:
+            mask_data += '='
+        binary_mask_data = base64.b64decode(mask_data)  # Convert base64 to binary data
     elif mask.startswith('data:image/png;base64,'):
-        mask_data = mask.replace('data:image/png;base64,', '')
+        mask_data = mask.split(',', 1)[1]  # Extract base64 data
+        # Add padding if missing
+        while len(mask_data) % 4 != 0:
+            mask_data += '='
+        binary_mask_data = base64.b64decode(mask_data)  # Convert base64 to binary data
+    elif mask.endswith(('.jpeg', '.jpg', '.png')):
+        with open('./'+mask, 'rb') as file:
+            binary_mask_data = file.read()
     else:
-        raise ValueError('Unsupported mask format')
-
-    # convert base64 string to binary data
-    binary_img_data = base64.b64decode(image_data)
-    binary_mask_data = base64.b64decode(mask_data)
+        raise ValueError(f'Unsupported mask format for: {mask}')
 
     # Save the image and mask files to their respective folders
-    img_filename = os.path.join(folderImage, str(len(imageFiles)) + ext)
-    seg_mask_filename = os.path.join(folderMask, str(len(maskFiles)) + '_Segmentation.png')
+    img_filename = os.path.join(folderImage, str(len(imageFiles)) + '.jpeg')
+    seg_mask_filename = os.path.join(folderMask, str(len(maskFiles)) + '_Segmentation' + '.png')
 
     with open(img_filename, 'wb') as f:
         f.write(binary_img_data)
 
-    with io.BytesIO(binary_mask_data) as stream:
-        with Image.open(stream) as img:
-            img = img.convert("L").point(lambda x: 0 if x < 128 else 255, '1')
-            img.save(seg_mask_filename, "PNG")
-
+    with open(seg_mask_filename, 'wb') as f:
+        f.write(binary_mask_data)
 
 def find_dir_with_string(start_dir, search_string):
     for dirpath, dirnames, filenames in os.walk(start_dir):

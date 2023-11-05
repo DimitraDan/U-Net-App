@@ -4,6 +4,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
 
+
 class CustomUser(AbstractUser):
     user_type_data = ((1, "Admin"), (2, "Doctor"), (3, "Patient"))
     user_type = models.CharField(default=1, choices=user_type_data, max_length=10)
@@ -91,26 +92,6 @@ class Run(models.Model):
         self.checkpoint.all().delete()
 
         super().delete(*args, **kwargs)
-
-
-class FailedRun(models.Model):
-    run = models.ForeignKey(Run, on_delete=models.CASCADE)
-    timestamp = models.DateTimeField(auto_now_add=True)
-    model_path = models.CharField(max_length=255)
-    optimizer_state_path = models.CharField(max_length=255)
-    image_files = models.ManyToManyField(MultipleImage)
-
-    def rollback_checkpoints(self):
-        # Delete the saved model checkpoint
-        if os.path.exists(self.model_path):
-            os.remove(self.model_path)
-
-        # Delete the saved optimizer state
-        if os.path.exists(self.optimizer_state_path):
-            os.remove(self.optimizer_state_path)
-
-        # Delete the associated image files
-        self.image_files.all().delete()
 
 
 class Patient(models.Model):

@@ -451,12 +451,12 @@ def editDoctorSave(request):
 
             messages.success(request, "Successfully Edited user")
             return HttpResponseRedirect(
-                reverse("editDoctor", kwargs={"doctor_id": user_id})
+                reverse("editDoctor", kwargs={"user_id": user_id})
             )
         except:
             messages.error(request, "Failed to Edit user")
             return HttpResponseRedirect(
-                reverse("editDoctor", kwargs={"doctor_id": user_id})
+                reverse("editDoctor", kwargs={"user_id": user_id})
             )
 
 

@@ -177,7 +177,6 @@ function submitForm(formElement) {
     const formData = new FormData(formElement);
     const loadingSpinnerStep3 = document.getElementById('loadingSpinner');
     loadingSpinnerStep3.style.display = 'block';
-
     fetch('/predictMask', {
         method: 'POST', body: formData
     })
