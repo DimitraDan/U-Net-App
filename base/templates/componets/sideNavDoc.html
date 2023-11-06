@@ -1,0 +1,43 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>SideNav</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/sideBarDoc.css' %}">
+    <link rel="stylesheet" href="{% static 'css/pageLoad.css' %}">
+    <meta charset="UTF-8">
+</head>
+
+<body>
+<script>
+    var app = document.getElementsByTagName("BODY")[0];
+    if (localStorage.lightMode == "dark") {
+        app.setAttribute("light-mode", "dark");
+    }
+</script>
+
+<div id="wrapper">
+    <div id="leftWrapper">
+        <div id="listView" class="list">
+            <li><a href="/doctorHome"><i class="fas fa-home"></i> Home</a></li>
+            <li><a href="/Segmentation"><i class="fas fa-cogs"></i> Segmentation</a></li>
+            <li><a href="/"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            <li style="position: absolute; top: 100%; height: 150px;">
+                <button class="light-mode-button" aria-label="Toggle Light Mode" onclick="toggle_light_mode()">
+                    <span></span>
+                    <span></span>
+                </button>
+            </li>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script type="text/javascript" src="{% static '/js/darkMode.js' %}"></script>
+<script type="text/javascript" src="{% static '/js/pageLoad.js' %}"></script>
+<script type="text/javascript" src="{% static '/js/sideNav.js' %}"></script>
+
+</body>
+</html>
