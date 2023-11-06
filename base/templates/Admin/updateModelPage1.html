@@ -61,11 +61,11 @@
                         </select>
                         <br>
                         <br>
-                        <button type="button" id="checkImagesBtn">Check Images</button>
+                        <button type="button" id="checkImagesBtnStep2">Check Images</button>
                         <br>
                     </div>
                     <h3 class="fs-subtitle">Upload/Choose images for mask prediction</h3>
-                    <table id="imageTable" class="display">
+                    <table id="imageTableStep2" class="display">
                         <thead>
                         <tr>
                             <th class="no-sort"></th>
@@ -98,7 +98,7 @@
                             <tr>
                                 <td>
                                     <label>
-                                        <input type="checkbox" name="trainImages" value="{{ item.id }}">
+                                        <input type="checkbox" name="trainImagesStep2" value="{{ item.id }}">
                                     </label>
                                 </td>
                                 <td>
@@ -116,7 +116,7 @@
                             <tr>
                                 <td>
                                     <label>
-                                        <input type="checkbox" name="testImages" value="{{ item.id }}">
+                                        <input type="checkbox" name="testImagesStep2" value="{{ item.id }}">
                                     </label>
                                 </td>
                                 <td>
@@ -161,7 +161,7 @@
                     <h2 class="fs-title">Step 3</h2>
                     <h3 class="fs-subtitle">Correct predicted masks</h3>
 
-                    <table id="imageTable" class="display" style="max-font-size: 100px">
+                    <table id="imageTableStep3" class="display" style="max-font-size: 100px">
                         <thead>
                         <tr>
                             <th></th>
@@ -188,7 +188,7 @@
                         <button type="button" id="checkFinalImagesBtn">Check Images</button>
                     </div>
                     <br>
-                    <table id="imageTable" class="display" style="max-font-size: 100px">
+                    <table id="imageTableStep4" class="display" style="max-font-size: 100px">
                         <thead>
                         <tr>
                             <th>#</th>
@@ -219,6 +219,8 @@
         </div>
     </div>
 </div>
+
+
 
 <script src="{% static '/js/evaluateModel.js' %}"></script>
 <script src="{% static '/js/stepper.js' %}"></script>

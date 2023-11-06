@@ -119,37 +119,48 @@ function restartCanvas(imageUrl, index) {
     };
 }
 
+
 $(document).ready(function () {
-    $('#checkImagesBtn').click(function () {
+    $('#imageTableStep2').DataTable({
+        "paging": true,
+        "searching": true,
+        "lengthMenu": [[3, 10, 25, 50, -1], [5, 10, 25, 50, "All"]],
+        "info": true,
+        "columnDefs": [
+            {"orderable": false, "targets": 'no-sort'}
+        ]
+    });
+
+    $('#checkImagesBtnStep2').click(function () {
         const numberOfImages = parseInt($('#numberOfImages').val());
         const section = $('#section').val();
-        checkFirstNImages(section, numberOfImages);
+        checkFirstNImages(section+'Step2', numberOfImages, 'imageTableStep2');
     });
 });
 
-$(document).ready(function () {
-    $('#checkFinalImagesBtn').click(function () {
-        const numberOfImages = parseInt($('#numberOfFinalImages').val());
-        checkFirstNImages('selectedImages', numberOfImages);
-    });
-});
-
-
-function checkFirstNImages(section, numberOfImages) {
-    const originalTable = $('#imageTable').DataTable();
+function checkFirstNImages(section, numberOfImages, tableId) {
+    const originalTable = $(`#${tableId}`).DataTable();
     const checkboxes = originalTable.column(0).nodes().to$().find(`input[name="${section}"]`);
 
-    checkboxes.prop('checked', false); // Uncheck all checkboxes
+    // Log the number of checkboxes found
+    console.log(`Found ${checkboxes.length} checkboxes for section "${section}" in table "${tableId}"`);
 
+    // Uncheck all checkboxes
+    checkboxes.prop('checked', false);
+
+    // Log the number of checkboxes before slicing
+    console.log(`Checking the first ${numberOfImages} checkboxes.`);
+
+    // Check the first N checkboxes
     const firstNCheckboxes = checkboxes.slice(0, numberOfImages);
-    firstNCheckboxes.prop('checked', true); // Check the first N checkboxes
+    firstNCheckboxes.prop('checked', true);
 
+    // Log the number of checkboxes after slicing
+    console.log(`Checked ${firstNCheckboxes.length} checkboxes.`);
+
+    // Attach a double-click event to toggle checkboxes
     firstNCheckboxes.each(function () {
         toggleCheckmark(this);
-        $(this).on('dblclick', function () {
-            $(this).prop('checked', false);
-            toggleCheckmark(this);
-        });
     });
 }
 
@@ -162,61 +173,86 @@ function toggleCheckmark(checkbox) {
     }
 }
 
-
 $(document).ready(function () {
-    $('#imageTable').DataTable({
-        "paging": true,
-        "searching": true,
-        "lengthMenu": [[3, 10, 25, 50, -1], [5, 10, 25, 50, "All"]],
-        "info": true,
-        columnDefs: [{"orderable": false, "targets": 'no-sort'}]
+    $('#checkFinalImagesBtn').click(function () {
+        const numberOfImages = parseInt($('#numberOfFinalImages').val());
+        checkFirstNImages('selectedImages', numberOfImages, 'imageTableStep4');
     });
 });
+
 
 function submitForm(formElement) {
     const formData = new FormData(formElement);
     const loadingSpinnerStep3 = document.getElementById('loadingSpinner');
     loadingSpinnerStep3.style.display = 'block';
+
+    // Get the original DataTable
+    const originalTable = $('#imageTableStep2').DataTable();
+
+    // Create an array to store selected image values
+    const selectedImages = [];
+
+    // Iterate over each page of the original table
+    for (let page = 0; page < originalTable.page.info().pages; page++) {
+        // Go to the specific page
+        originalTable.page(page).draw(false);
+
+        // Get all the checkboxes on the current page
+        const checkboxes = $(`#imageTableStep2 tbody input[name="trainImagesStep2"]:checked`);
+        checkboxes.each(function () {
+            selectedImages.push(this.value);
+        });
+    }
+
+    // Add the selected images to the formData
+    formData.delete('trainImagesStep2'); // Remove any previous trainImagesStep2 data
+    selectedImages.forEach(value => {
+        formData.append('trainImagesStep2', value);
+    });
+
     fetch('/predictMask', {
-        method: 'POST', body: formData
+        method: 'POST',
+        body: formData
     })
-        .then(response => response.json())
-        .then(data => {
-            const step3TableBody = $('#step3TableBody');
-            step3TableBody.empty(); // Clear existing data
+    .then(response => response.json())
+    .then(data => {
+        const step3TableBody = $('#step3TableBody');
+        step3TableBody.empty(); // Clear existing data
 
-            for (let i = 0; i < data.evaluation.length; i++) {
-                step3TableBody.append(`
-                            <tr>
-                              <td>${i + 1}</td>
-                              <td><img src="${data.evaluation[i].image}" alt="Image"></td>
-                              <td><img src="${data.evaluation[i].prediction}" alt="Mask"></td>
-                              <td>
-                                <input type="hidden" id="counter" name="counter" value="${data.evaluation.length}">
-                                <input type="hidden" id="x${i + 1}" name="x${i + 1}">
-                                <input type="hidden" id="y${i + 1}" name="y${i + 1}">
-                                <input name="image${i + 1}" type="hidden" value="${data.evaluation[i].image}">
-                                <input name="mask${i + 1}" type="hidden" value="${data.evaluation[i].prediction}">
-                                <div class="canvas-container">
-                                  <canvas onmouseleave="getCoordinates(${i + 1})" id="canvas${i + 1}" class="drawing-canvas"></canvas>
-                                  <button type="button" onclick="restartCanvas('${data.evaluation[i].image}', 'canvas${i + 1}')">Restart
-                                  <i class="fas fa-redo"></i>
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                `);
-                drawImage(`canvas${i + 1}`, `${data.evaluation[i].image}`)
-            }
-            loadingSpinnerStep3.style.display = 'none';
-            nextTab()
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            loadingSpinnerStep3.style.display = 'none';
+        for (let i = 0; i < data.evaluation.length; i++) {
+            step3TableBody.append(`
+                <tr>
+                    <td>${i + 1}</td>
+                    <td><img src="${data.evaluation[i].image}" alt="Image"></td>
+                    <td><img src="${data.evaluation[i].prediction}" alt="Mask"></td>
+                    <td>
+                        <input type="hidden" id="counter" name="counter" value="${data.evaluation.length}">
+                        <input type="hidden" id="x${i + 1}" name="x${i + 1}">
+                        <input type="hidden" id="y${i + 1}" name="y${i + 1}">
+                        <input name="image${i + 1}" type="hidden" value="${data.evaluation[i].image}">
+                        <input name="mask${i + 1}" type="hidden" value="${data.evaluation[i].prediction}">
+                        <div class="canvas-container">
+                            <canvas onmouseleave="getCoordinates(${i + 1})" id="canvas${i + 1}" class="drawing-canvas"></canvas>
+                            <button type="button" onclick="restartCanvas('${data.evaluation[i].image}', 'canvas${i + 1}')">Restart
+                                <i class="fas fa-redo"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `);
+            drawImage(`canvas${i + 1}`, `${data.evaluation[i].image}`);
+        }
 
-        })
+        loadingSpinnerStep3.style.display = 'none';
+        nextTab();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        loadingSpinnerStep3.style.display = 'none';
+    });
 }
+
+
 
 function submitCorrectedImages(formElement) {
     const formData = new FormData(formElement);

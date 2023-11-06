@@ -302,9 +302,9 @@ def predictMask(request):
         evaluation = []
         uploadedImages = request.FILES.getlist("uploadedImages")
         checkpoint = request.POST.get("prediction_checkpoint")
-        reportImagesId = request.POST.getlist("reportImages")
-        testImagesId = request.POST.getlist("testImages")
-        trainImagesId = request.POST.getlist("trainImages")
+        reportImagesId = request.POST.getlist("reportImagesStep2")
+        testImagesId = request.POST.getlist("testImagesStep2")
+        trainImagesId = request.POST.getlist("trainImagesStep2")
 
         for file in uploadedImages:
             imagep = PIL_Image.open(file)
