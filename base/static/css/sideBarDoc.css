@@ -231,7 +231,7 @@ body[light-mode="dark"] input[type="button"], table a {
     cursor: pointer;
 }
 
-button, table a {
+button, input[type="submit"], table a {
     background-color: #007bff;
     color: #fff;
     border: none;
@@ -240,7 +240,7 @@ button, table a {
     cursor: pointer;
 }
 
-button:hover, table a:hover {
+button:hover,input[type="submit"]:hover, table a:hover {
     background-color: #0062cc;
     color: #fff;
 }

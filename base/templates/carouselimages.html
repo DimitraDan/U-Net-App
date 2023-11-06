@@ -27,20 +27,20 @@
                                             {% if message.tags == 'error' %}
                                                 <td></td>
                                                 <td>
-                                                    <input class='box' onclick="getCoordinates()" type="submit"
+                                                    <input onclick="getCoordinates()" type="submit"
                                                            name="submitReport" id="submitReport"
-                                                           style="top: 15em; display: none;" value="Submit">
+                                                           value="Submit">
                                                 </td> {% endif %} {% endfor %}
                                         </div> {% else %}
                                         <td>
-                                            <input class='box' onclick="drawImage('{{ image }}')" type="button"
+                                            <input onclick="drawImage('{{ image }}')" type="button"
                                                    name="report" id="report" style="top: 15em;" value="REPORT!">
                                         </td>
                                         <td></td>
                                         <td>
-                                            <input class='box' onclick="getCoordinates()" type="submit"
+                                            <input  onclick="getCoordinates()" type="submit"
                                                    name="submitReport" id="submitReport"
-                                                   style="top: 15em; display: none;" value="Submit">
+                                                   value="Submit">
                                         </td> {% endif %}
                                     </div>
                                 </tr>
