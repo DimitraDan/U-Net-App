@@ -82,15 +82,23 @@ def convert_image(image_file, output_format):
 
 def createMask(request, image, x_points, y_points, is_circle=False, save='NO'):
     if image.startswith('data'):
-        img = readb64(image)
+        # Remove the 'data:image/jpeg;base64,' prefix if it exists
+        image_data = image.split(',')[1] if ',' in image else image
+
+        # Decode the base64 data
+        image_bytes = base64.b64decode(image_data)
+
+        # Create a BytesIO object to work with Pillow
+        image_io = BytesIO(image_bytes)
+
+        # Open the image using Pillow
+        img = PIL_Image.open(image_io)
     else:
         current_directory = os.getcwd()
         img = PIL_Image.open(current_directory + image)
 
-    h, w = img.size
+    w, h = img.size
 
-    MASK_HEIGHT = h
-    MASK_WIDTH = w
     all_points = []
     for i, x in enumerate(x_points.split(",")):
         if x != '':
@@ -100,7 +108,7 @@ def createMask(request, image, x_points, y_points, is_circle=False, save='NO'):
             y_int = int(round(y_float))
             all_points.append([x_int, y_int])
 
-    mask = np.zeros((MASK_HEIGHT, MASK_WIDTH), dtype=np.uint8)
+    mask = np.zeros((h, w), dtype=np.uint8)
 
     if is_circle and len(all_points) >= 2:
         # For circles, we need at least two points to define the diameter
