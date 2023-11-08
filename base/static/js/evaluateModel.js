@@ -154,6 +154,7 @@ function checkFinalFirstNImages(numberOfImages, tableId) {
     const checkboxes = $(`#${tableId} input[name="selectedImages"]:checkbox`);
     checkboxes.prop('checked', false);
     checkboxes.slice(0, numberOfImages).prop('checked', true);
+
 }
 
 function checkFirstNImages(section, numberOfImages, tableId) {
