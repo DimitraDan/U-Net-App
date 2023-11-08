@@ -9,7 +9,6 @@ from PIL import Image as PIL_Image
 from django.core.files.base import ContentFile
 
 from base.models import *
-from medicalApp import settings
 
 
 def readb64(encoded_image):

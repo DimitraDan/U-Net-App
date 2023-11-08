@@ -121,6 +121,12 @@ function restartCanvas(imageUrl, index) {
 
 
 $(document).ready(function () {
+    $('#checkFinalImagesBtn').click(function () {
+        const numberOfImages = parseInt($('#numberOfFinalImages').val());
+        checkFinalFirstNImages(numberOfImages, 'imageTableStep4');
+    });
+
+
     $('#imageTableStep2').DataTable({
         "paging": true,
         "searching": true,
@@ -131,12 +137,24 @@ $(document).ready(function () {
         ]
     });
 
+    $('#imageTableStep4').DataTable({
+        paging: false,
+        ordering: false,
+        searching:false
+    });
+
     $('#checkImagesBtnStep2').click(function () {
         const numberOfImages = parseInt($('#numberOfImages').val());
         const section = $('#section').val();
         checkFirstNImages(section+'Step2', numberOfImages, 'imageTableStep2');
     });
 });
+
+function checkFinalFirstNImages(numberOfImages, tableId) {
+    const checkboxes = $(`#${tableId} input[name="selectedImages"]:checkbox`);
+    checkboxes.prop('checked', false);
+    checkboxes.slice(0, numberOfImages).prop('checked', true);
+}
 
 function checkFirstNImages(section, numberOfImages, tableId) {
     const originalTable = $(`#${tableId}`).DataTable();
@@ -172,14 +190,6 @@ function toggleCheckmark(checkbox) {
         }
     }
 }
-
-$(document).ready(function () {
-    $('#checkFinalImagesBtn').click(function () {
-        const numberOfImages = parseInt($('#numberOfFinalImages').val());
-        checkFirstNImages('selectedImages', numberOfImages, 'imageTableStep4');
-    });
-});
-
 
 function submitForm(formElement) {
     const formData = new FormData(formElement);
