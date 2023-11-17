@@ -14,37 +14,14 @@
         <div id="header">
             <a id="fullPage" href="#">|||</a>
             <div id="contentWrapper">
-                <form method="post" enctype='multipart/form-data'> {% csrf_token %}
+                <form method="post" enctype='multipart/form-data'>
+                    {% csrf_token %}
                     <div id="popupContainer" class="popup">
                         <div id="overlay" class="overlay">
                         <div class="popup-content">
                             <span class="close-button" id="closePopupButton">&times;</span>
-                            <table>
-                                <tr>
-                                    <div class="row"> {% if messages %}
-                                        <div class="col-12"> {% for message in messages %}
-                                            <div class="alert alert-danger" style="margin-top:10px">{{ message }}</div>
-                                            {% if message.tags == 'error' %}
-                                                <td></td>
-                                                <td>
-                                                    <input onclick="getCoordinates()" type="submit"
-                                                           name="submitReport" id="submitReport"
-                                                           value="Submit">
-                                                </td> {% endif %} {% endfor %}
-                                        </div> {% else %}
-                                        <td>
-                                            <input onclick="drawImage('{{ image }}')" type="button"
-                                                   name="report" id="report" style="top: 15em;" value="REPORT!">
-                                        </td>
-                                        <td></td>
-                                        <td>
-                                            <input  onclick="getCoordinates()" type="submit"
-                                                   name="submitReport" id="submitReport"
-                                                   value="Submit">
-                                        </td> {% endif %}
-                                    </div>
-                                </tr>
-                            </table>
+                            <canvas style="width: 500px; height: 500px" ondblclick="fullscreen()" id="canvas"></canvas>
+
                             <input type="text" name="x" id="x" style="display: none;">
                             <input type="text" name="y" id="y" style="display: none;">
                             <input type="text" name="i" id="i" style="display: none;">
@@ -85,7 +62,33 @@
                                     </table>
                                 </div>
                             </div>
-                            <canvas ondblclick="fullscreen()" id="canvas"></canvas>
+                                                        <table>
+                                <tr>
+                                    <div class="row"> {% if messages %}
+                                        <div class="col-12"> {% for message in messages %}
+                                            <div class="alert alert-danger" style="margin-top:10px">{{ message }}</div>
+                                            {% if message.tags == 'error' %}
+                                                <td></td>
+                                                <td>
+                                                    <input onclick="getCoordinates()" type="submit"
+                                                           name="submitReport" id="submitReport"
+                                                           value="Submit">
+                                                </td> {% endif %} {% endfor %}
+                                        </div> {% else %}
+                                        <td>
+                                            <input onclick="drawImage('{{ image }}')" type="button"
+                                                   name="report" id="report" style="top: 15em;" value="REPORT!">
+                                        </td>
+                                        <td></td>
+                                        <td>
+                                            <input  onclick="getCoordinates()" type="submit"
+                                                   name="submitReport" id="submitReport"
+                                                   value="Submit">
+                                        </td> {% endif %}
+                                    </div>
+                                </tr>
+
+                            </table>
                         </div>
                        </div>
                     </div>

@@ -1,4 +1,5 @@
 import logging
+import math
 import os
 import uuid
 from io import BytesIO
@@ -16,7 +17,7 @@ from base.data_loading import BasicDataset, CarvanaDataset
 from base.evaluate import evaluate
 from base.iou_score import *
 from base.manageFolders import deleteFiles
-from base.models import Run, TrainLoss, Validation, Checkpoint
+from base.models import Run, Checkpoint, Validation, AverageTrainLoss
 from unet.unetModel import UNet
 
 dir_img = "media/image/run/"
@@ -28,13 +29,21 @@ def create_image_representation(image_tensor, format='jpeg'):
     # Assuming image_tensor is a tensor representing an image
     # Convert the tensor to a PIL Image
     to_pil = ToPILImage()
-    image = to_pil(image_tensor.cpu())
+
+    # Ensure the tensor is in the correct range [0, 255]
+    image_tensor = (image_tensor * 255).to(torch.uint8)
+
+    # Convert the tensor to torch.uint8 type
+    image_tensor = image_tensor.to(torch.uint8)
+
+    # Convert to PIL Image
+    image_pil = to_pil(image_tensor.squeeze().cpu())  # Remove batch dimension
 
     # Create a BytesIO object to hold the image data
     image_io = BytesIO()
 
     # Save the PIL Image to the BytesIO object with the specified format
-    image.save(image_io, format=format)
+    image_pil.save(image_io, format=format)
 
     # Create a Django File object from the BytesIO data
     image_file = File(image_io, name=f'{uuid.uuid4()}.{format}')
@@ -64,7 +73,7 @@ def train_model(
         dataset = BasicDataset(dir_img, dir_mask, img_scale)
 
     # 2. Split into selected / validation partitions
-    n_val = int(len(dataset) * val_percent)
+    n_val = math.ceil(len(dataset) * val_percent)
     n_train = len(dataset) - n_val
     train_set, val_set = random_split(dataset, [n_train, n_val], generator=torch.Generator().manual_seed(0))
 
@@ -88,11 +97,9 @@ def train_model(
     # 4. Set up the optimizer, the loss, the learning rate scheduler and the loss scaling for AMP
     optimizer = optim.RMSprop(model.parameters(),
                               lr=learning_rate, weight_decay=weight_decay, momentum=momentum, foreach=True)
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', patience=5)  # goal: maximize Iou score
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', patience=5)  # goal: maximize Dice score
     grad_scaler = torch.cuda.amp.GradScaler(enabled=amp)
     criterion = nn.CrossEntropyLoss() if model.n_classes > 1 else nn.BCEWithLogitsLoss()
-    global_step = 0
-    iou = []
 
     # 5. Begin training
     for epoch in range(1, epochs + 1):
@@ -114,19 +121,14 @@ def train_model(
                     masks_pred = model(images)
                     if model.n_classes == 1:
                         loss = criterion(masks_pred.squeeze(1), true_masks.float())
-                        loss += iou_loss(F.sigmoid(masks_pred.squeeze(1)), true_masks.float(), multiclass=False)
-                        iou.append(iou_coeff(F.sigmoid(masks_pred.squeeze(1)), true_masks.float()))
+                        loss += dice_loss(F.sigmoid(masks_pred.squeeze(1)), true_masks.float(), multiclass=False)
                     else:
                         loss = criterion(masks_pred, true_masks)
-                        loss += iou_loss(
+                        loss += dice_loss(
                             F.softmax(masks_pred, dim=1).float(),
                             F.one_hot(true_masks, model.n_classes).permute(0, 3, 1, 2).float(),
                             multiclass=True
                         )
-                        iou.append(multiclass_iou_coeff(
-                            F.softmax(masks_pred, dim=1).float(),
-                            F.one_hot(true_masks, model.n_classes).permute(0, 3, 1, 2).float(),
-                        ))
 
                 optimizer.zero_grad(set_to_none=True)
                 grad_scaler.scale(loss).backward()
@@ -135,38 +137,42 @@ def train_model(
                 grad_scaler.update()
 
                 pbar.update(images.shape[0])
-                global_step += 1
                 epoch_loss += loss.item()
-
-                train_loss = TrainLoss.objects.create(
-                    train_loss=loss.item(),
-                    epoch=epoch,
-                    step=global_step
-                )
-                run.train_loss.add(train_loss)
-
                 pbar.set_postfix(**{'loss (batch)': loss.item()})
 
-                # Evaluation round
-                division_step = (n_train // (5 * batch_size))
-                if division_step > 0:
-                    if global_step % division_step == 0:
-                        val_score = evaluate(model, val_loader, device, amp)
-                        scheduler.step(val_score)
+        # Calculate average training loss for each epoch
+        average_train_loss = epoch_loss / len(train_loader)
+        print(f'Training Average Loss: {average_train_loss}')
 
-                        logging.info('Validation Iou score: {}'.format(val_score))
-                        validation = Validation.objects.create(
-                            learning_rate=optimizer.param_groups[0]['lr'],
-                            avg_validation_Iou=val_score,
-                            epoch=epoch,
-                            step=global_step,
-                            validation_Iou=iou[global_step - 1],
-                            image=create_image_representation(images[0], 'jpeg'),
-                            true_mask=create_image_representation(true_masks[0].float(), 'png'),
-                            pred_mask=create_image_representation(masks_pred.argmax(dim=1)[0].float(), 'png')
-                        )
-                        run.validation_loss.add(validation)
+        # Evaluation round for each epoch
+        val_images, val_masks, val_pred_mask_images, dice_scores, average_dice_score = evaluate(model, val_loader, device, False)
+        scheduler.step(average_dice_score)
+        logging.info('Validation Average Dice score: {}'.format(average_dice_score))
 
+        for i in range(len(val_images)):
+            print(f"Processing iteration {i}")
+            print(f"LR: {optimizer.param_groups[0]['lr']}")
+            print(f"Validation score: {dice_scores[i]}")
+
+            validation = Validation.objects.create(
+                learning_rate=optimizer.param_groups[0]['lr'],
+                validation_score=dice_scores[i],
+                epoch=epoch,
+                image=create_image_representation(val_images[i], 'jpeg'),
+                true_mask=create_image_representation(val_masks[i], 'png'),
+                pred_mask=create_image_representation(1.0 - val_pred_mask_images[i], 'png')
+            )
+            run.validation_round.add(validation)
+
+        average_loss = AverageTrainLoss.objects.create(
+            epoch=epoch,
+            average_train_loss=average_train_loss,
+            average_validation_loss=average_dice_score
+        )
+
+        run.average_loss_round.add(average_loss)
+
+        run.save()
         if save_checkpoint:
             try:
                 checkpoint_uuid = uuid.uuid4()
@@ -189,7 +195,7 @@ def training(model_path="base/MODEL.pth", request=None):
     if request.FILES.get("file") is not None:
         model_path = request.FILES.get("file")
 
-    device = torch.device('cuda')
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     logging.info(f'Using device {device}')
 
     model = UNet(n_channels=3, n_classes=2, bilinear=False)
@@ -205,7 +211,6 @@ def training(model_path="base/MODEL.pth", request=None):
     deleteFiles(dir_checkpoint)
     run = Run.objects.create(status='RUNNING', trainer=request.user, name=request.POST.get("name"))
     try:
-        torch.cuda.empty_cache()
         train_model(
             run=run,
             model=model,

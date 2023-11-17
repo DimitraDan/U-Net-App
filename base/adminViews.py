@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
+from django.contrib.auth.hashers import make_password
 
 from base.manageFolders import *
 from base.manageImages import *
@@ -113,14 +114,22 @@ def download_csv(request):
     return response
 
 
+# views.py
+
+from django.shortcuts import render
+from django.db.models import Count
+from django.db.models.functions import TruncDate
+from .models import CustomUser
+
+
 @login_required(login_url="/login/")
 @user_passes_test(lambda user: user.user_type == "1")
 def adminHome(request):
-    # Execute the SQL query and get the results as a queryset
-    user_type_counts_statistics = CustomUser.objects.raw(
-        'SELECT id, user_type, COUNT(id) as user_type_count FROM base_customuser GROUP BY user_type')
-    user_date_joined_counts_statistics = CustomUser.objects.raw(
-        'SELECT id, CAST(date_joined AS TEXT) AS date_joined_formatted, COUNT(id) AS user_date_count FROM base_customuser GROUP BY date_joined_formatted')
+    user_type_counts_statistics = CustomUser.objects.values('user_type').annotate(user_type_count=Count('id'))
+    # Truncate date to get only the date part
+    user_date_joined_counts_statistics = CustomUser.objects.annotate(
+        date_joined_formatted=TruncDate('date_joined')
+    ).values('date_joined_formatted').annotate(user_date_count=Count('id'))
 
     # Initialize empty lists to store the user types and counts
     user_types = []
@@ -131,24 +140,66 @@ def adminHome(request):
 
     # Loop through the queryset and extract the user types and counts
     for row in user_type_counts_statistics:
-        user_types.append(row.user_type)
-        user_type_counts.append(row.user_type_count)
+        user_types.append(row['user_type'])
+        user_type_counts.append(row['user_type_count'])
 
     for row in user_date_joined_counts_statistics:
-        user_dates.append(row.date_joined)
-        user_date_counts.append(row.user_date_count)
+        user_dates.append(row['date_joined_formatted'].strftime('%Y-%m-%d'))  # Convert to string
+        user_date_counts.append(row['user_date_count'])
+
+    runs_per_date_statistics = Run.objects.values('date').annotate(run_count=Count('id'))
+    runs_per_trainer_statistics = Run.objects.values('trainer_id').annotate(run_count=Count('id'))
+
+    # Initialize empty lists to store the results
+    dates = []
+    run_counts_per_date = []
+
+    trainer_ids = []
+    run_counts_per_trainer = []
+
+    # Loop through the queryset and extract the results
+    for row in runs_per_date_statistics:
+        dates.append(row['date'].strftime('%Y-%m-%d'))
+        run_counts_per_date.append(row['run_count'])
+
+    for row in runs_per_trainer_statistics:
+        trainer_ids.append(row['trainer_id'])
+        run_counts_per_trainer.append(row['run_count'])
+
+        runs_per_date_statistics = Run.objects.values('date').annotate(run_count=Count('id'))
+        run_status_statistics = Run.objects.values('status').annotate(run_count=Count('id'))
+
+        dates = []
+        run_counts_per_date = []
+
+        run_statuses = []
+        run_counts_per_status = []
+
+        for row in runs_per_date_statistics:
+            dates.append(row['date'].strftime('%Y-%m-%d'))
+            run_counts_per_date.append(row['run_count'])
+
+        for row in run_status_statistics:
+            run_statuses.append(row['status'])
+            run_counts_per_status.append(row['run_count'])
 
     # Pass the user types and counts to the context dictionary
     context = {
         'user_types': user_types,
         'user_type_counts': user_type_counts,
         'user_dates': user_dates,
-        'user_date_counts': user_date_counts
+        'user_date_counts': user_date_counts,
+        'dates': dates,
+        'run_counts_per_date': run_counts_per_date,
+        'trainer_ids': trainer_ids,
+        'run_counts_per_trainer': run_counts_per_trainer,
+        'run_statuses': run_statuses,
+        'run_counts_per_status': run_counts_per_status,
     }
 
+    print(context)
     # Render the template with the context dictionary
     return render(request, 'Admin/adminHome.html', context)
-
 
 @login_required(login_url="/login/")
 @user_passes_test(lambda user: user.user_type == "1")
@@ -190,10 +241,8 @@ def train_results(request, run_id):
 
     context = {
         'run': run,
-        'train_loss_data': run.train_loss.all(),
-        'train_loss_chart': list(run.train_loss.all().values()),
-        'validation_data': run.validation_loss.all(),
-        'validation_chart': list(run.validation_loss.all().values()),
+        'average_train_loss': list(run.average_loss_round.all().values()),
+        'validation_data': run.validation_round.all(),
         'checkpoints': run.checkpoint.all()
     }
     return render(request, "Admin/trainResults.html", context)
@@ -206,7 +255,7 @@ def updateRunProcess(request, run_id):
     checkpoints = Checkpoint.objects.filter(run=run)
     reportImages = MultipleImage.objects.filter(purpose="report")
     testImages = MultipleImage.objects.filter(purpose="test")
-    validationRunImages = Run.objects.get(id=run_id).validation_loss.all()
+    validationRunImages = Run.objects.get(id=run_id).validation_round.all()
     trainImages = []
 
     for image in validationRunImages:
@@ -259,7 +308,7 @@ def trainSelected(request):
         except Exception as e:
             print(f"Error for object : {e}")
 
-        return HttpResponseRedirect(request.META.get("HTTP_REFERER", "/"))
+        return HttpResponseRedirect("trainList")
 
 
 @login_required(login_url="/login/")
@@ -335,7 +384,7 @@ def predictMask(request):
 @user_passes_test(lambda user: user.user_type == "1")
 def update_model(request):
     checkpoint = request.POST.get("checkpoint")
-    src_path = os.getcwd() + "/" + checkpoint
+    src_path = os.getcwd() + "/media/" + checkpoint
     dst_path = os.getcwd() + "/base/MODEL.pth"
     shutil.copy(src_path, dst_path)
     return HttpResponseRedirect(request.META.get("HTTP_REFERER", "/"))
@@ -421,7 +470,7 @@ def deleteImage(request, image_id):
 
 @login_required(login_url="/login/")
 @user_passes_test(lambda user: user.user_type == "1")
-def editDoctor(request, user_id):
+def editUser(request, user_id):
     user = CustomUser.objects.get(id=user_id)
 
     content = {
@@ -433,7 +482,7 @@ def editDoctor(request, user_id):
 
 @login_required(login_url="/login/")
 @user_passes_test(lambda user: user.user_type == "1")
-def editDoctorSave(request):
+def editUserSave(request):
     if request.method != "POST":
         return HttpResponse("<h2>Method Not Allowed</h2>")
     else:
@@ -441,22 +490,24 @@ def editDoctorSave(request):
         password = request.POST.get("password")
         username = request.POST.get("username")
         email = request.POST.get("email")
+        is_active = request.POST.get("is_active")
 
         try:
             user = CustomUser.objects.get(id=user_id)
             user.username = username
             user.email = email
-            user.password = password
+            user.is_active = is_active is not None
+            user.password = make_password(password)
             user.save()
 
             messages.success(request, "Successfully Edited user")
             return HttpResponseRedirect(
-                reverse("editDoctor", kwargs={"user_id": user_id})
+                reverse("editUser", kwargs={"user_id": user_id})
             )
         except:
             messages.error(request, "Failed to Edit user")
             return HttpResponseRedirect(
-                reverse("editDoctor", kwargs={"user_id": user_id})
+                reverse("editUser", kwargs={"user_id": user_id})
             )
 
 

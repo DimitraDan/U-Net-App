@@ -70,6 +70,21 @@ img {
   }
 }
 
+    #checkpoint, #section {
+        /* Add your custom styles for the select element */
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 16px;
+    }
+
+    #checkpoint option , #section option{
+        /* Add your custom styles for the options */
+        background-color: #fff;
+        color: #333;
+        font-size: 14px;
+    }
+
 /* GRID STYLING */
 .spinner-box {
   width: 300px;

@@ -13,6 +13,7 @@
     <div id="rightWrapper">
         <div id="header">
             <a id="fullPage" href="#">|||</a>
+        </div>
             <div id="contentWrapper">
 
 
@@ -57,7 +58,7 @@
                                                    class="txt">
                                             <input type="password" placeholder="Change Pwd" name="password" class="txt">
                                             <input type="checkbox" {% if user.is_active %}checked{% endif %}
-                                                   name="active" id="active_checkbox">
+                                                   name="is_active" id="active_checkbox">
                                             <label for="active_checkbox" class="checkbox">Active</label>
                                             <input type="hidden" placeholder="user_id" value="{{ user.id }}"
                                                    name="user_id" class="txt">
@@ -98,7 +99,6 @@
 
             </div>
         </div>
-    </div>
 {% endblock %}
 
 </body>

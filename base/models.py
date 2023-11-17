@@ -40,20 +40,18 @@ class MultipleImage(models.Model):
     date = models.DateField(default=timezone.now)
 
 
-class TrainLoss(models.Model):
+class AverageTrainLoss(models.Model):
     id = models.AutoField(primary_key=True)
-    train_loss = models.FloatField()
     epoch = models.IntegerField()
-    step = models.IntegerField()
+    average_train_loss = models.FloatField(blank=True, null=True)
+    average_validation_loss = models.FloatField(blank=True, null=True)
 
 
 class Validation(models.Model):
     id = models.AutoField(primary_key=True)
     learning_rate = models.FloatField()
-    avg_validation_Iou = models.FloatField()
     epoch = models.IntegerField()
-    step = models.IntegerField()
-    validation_Iou = models.FloatField()
+    validation_score = models.FloatField(blank=True, null=True)
     image = models.FileField(upload_to=upload_path_run_image, blank=True)
     true_mask = models.FileField(upload_to=upload_path_true_mask, blank=True)
     pred_mask = models.FileField(upload_to=upload_path_pred_mask, blank=True)
@@ -71,20 +69,17 @@ class Run(models.Model):
     trainer = models.ForeignKey(CustomUser, on_delete=models.PROTECT)
     status = models.CharField(max_length=10)
     date = models.DateField(default=timezone.now)
-    train_loss = models.ManyToManyField(TrainLoss, blank=True)
-    validation_loss = models.ManyToManyField(Validation, blank=True)
+    average_loss_round = models.ManyToManyField(AverageTrainLoss, blank=True)
+    validation_round = models.ManyToManyField(Validation, blank=True)
     checkpoint = models.ManyToManyField(Checkpoint, blank=True)
 
     def delete(self, *args, **kwargs):
-        # Delete associated TrainLoss objects
-        self.train_loss.all().delete()
-
         # Delete associated Validation objects and their files
-        for validation in self.validation_loss.all():
+        for validation in self.validation_round.all():
             validation.image.delete()
             validation.true_mask.delete()
             validation.pred_mask.delete()
-        self.validation_loss.all().delete()
+        self.validation_round.all().delete()
 
         # Delete associated Checkpoint objects and their files
         for checkpoint in self.checkpoint.all():
