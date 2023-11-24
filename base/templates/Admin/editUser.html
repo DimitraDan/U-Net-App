@@ -39,7 +39,7 @@
                             <br/>
                             <br/>
 
-                            <table>
+                            <table style="width: 300px; background-color: #fafbfC ">
                                 <thead>
                                 <tr>
                                     <th colspan="2">Update User</th>
@@ -57,6 +57,12 @@
                                             <input type="text" value={{ user.email }} placeholder="email" name="email"
                                                    class="txt">
                                             <input type="password" placeholder="Change Pwd" name="password" class="txt">
+                                            <select name="user_type" required>
+                                          {% for value, label in user.user_type_data %}
+                                            <option value="{{ value }}" {% if user.user_type == value %}selected{% endif %}>{{ label }}</option>
+                                          {% endfor %}
+                                           </select>
+
                                             <input type="checkbox" {% if user.is_active %}checked{% endif %}
                                                    name="is_active" id="active_checkbox">
                                             <label for="active_checkbox" class="checkbox">Active</label>

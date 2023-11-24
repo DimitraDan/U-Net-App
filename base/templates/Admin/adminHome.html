@@ -13,7 +13,6 @@
 {% include "componets/sideNav.html" %}
 
 {% block content %}
-
     <div id="rightWrapper">
         <div id="header">
             <a id="fullPage" href="#">|||</a>
@@ -21,199 +20,156 @@
                 <h1>welcome {{ user }}</h1>
             </header>
         </div>
-            <div id="contentWrapper" style="padding-top: 500px;">
-                <h1>Statistics</h1>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="chart-container">
-                            <canvas id="userTypeChart"></canvas>
-                        </div>
-                    </div>
 
-                    <div class="col-md-6">
-                        <div class="chart-container">
-                            <canvas id="userDateChart"></canvas>
-                        </div>
+        <div id="contentWrapper" style="padding-top: 300px;">
+            <h1>Statistics</h1>
+
+            <!-- Chart configuration table -->
+            <table id="chartConfigTable">
+                <tr>
+                    <td>Chart Type:</td>
+                    <td>
+                        <select id="chartTypeSelect">
+                            <option value="doughnut">Doughnut</option>
+                            <option value="line">Line</option>
+                            <option value="bar">Bar</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Data:</td>
+                    <td>
+                        <select id="chartDataSelect">
+                            <option value="userType">User Types</option>
+                            <option value="userDate">User Date Counts</option>
+                            <option value="runCountsPerDate">Runs Per Date</option>
+                            <option value="runsPerTrainer">Runs Per Trainer</option>
+                            <option value="runStatus">Run Status Counts</option>
+                            <!-- Add other data options as needed -->
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <button onclick="updateChart()">Update Chart</button>
+                    </td>
+                </tr>
+            </table>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="chart-container">
+                        <canvas id="dynamicChart"></canvas>
                     </div>
                 </div>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="chart-container">
-                            <canvas id="runsPerDateChart"></canvas>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="chart-container">
-                            <canvas id="runsPerTrainerChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row" style="padding-bottom: 20px">
-                    <div class="col-md-6">
-                        <div class="chart-container">
-                            <canvas id="runStatusChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <script>
-                    document.addEventListener("DOMContentLoaded", function () {
-                        // Chart data
-                        var userTypes = {{ user_types | safe }};
-                        var userTypeCounts = {{ user_type_counts | safe }};
-                        var userDates = {{ user_dates | safe }};
-                        var userDateCounts = {{ user_date_counts | safe }};
-                        var dates = {{ dates | safe }};
-                        var runCountsPerDate = {{ run_counts_per_date | safe }};
-                        var trainerIds = {{ trainer_ids | safe }};
-                        var runCountsPerTrainer = {{ run_counts_per_trainer | safe }};
-                        var runStatuses = {{ run_statuses | safe }};
-                        var runCountsPerStatus = {{ run_counts_per_status | safe }};
-
-                        // Chart options
-                        var chartOptions = {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                        };
-
-                        // Doughnut chart for user types
-                        var ctxType = document.getElementById('userTypeChart').getContext('2d');
-                        var userTypeChart = new Chart(ctxType, {
-                            type: 'doughnut',
-                            data: {
-                                labels: userTypes,
-                                datasets: [{
-                                    data: userTypeCounts,
-                                    backgroundColor: [
-                                        'rgba(255, 99, 132, 0.5)',
-                                        'rgba(54, 162, 235, 0.5)',
-                                    ],
-                                }],
-                            },
-                            options: chartOptions,
-                        });
-
-                        // Line chart for user date counts
-                        var ctxDate = document.getElementById('userDateChart').getContext('2d');
-                        var userDateChart = new Chart(ctxDate, {
-                            type: 'line',
-                            data: {
-                                labels: userDates,
-                                datasets: [{
-                                    label: 'User Date Counts',
-                                    data: userDateCounts,
-                                    borderColor: 'rgba(75, 192, 192, 1)',
-                                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                                    borderWidth: 2,
-                                    fill: true,
-                                }],
-                            },
-                            options: {
-                                ...chartOptions,
-                                scales: {
-                                    x: {
-                                        title: {
-                                            display: true,
-                                            text: 'Date Joined',
-                                        },
-                                    },
-                                    y: {
-                                        beginAtZero: true,
-                                    },
-                                },
-                            },
-                        });
-
-                        // Line chart for runs per date
-                        var ctxRunsDate = document.getElementById('runsPerDateChart').getContext('2d');
-                        var runsPerDateChart = new Chart(ctxRunsDate, {
-                            type: 'line',
-                            data: {
-                                labels: dates,
-                                datasets: [{
-                                    label: 'Runs Per Date',
-                                    data: runCountsPerDate,
-                                    borderColor: 'rgba(75, 192, 192, 1)',
-                                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                                    borderWidth: 2,
-                                    fill: true,
-                                }],
-                            },
-                            options: {
-                                ...chartOptions,
-                                scales: {
-                                    x: {
-                                        title: {
-                                            display: true,
-                                            text: 'Date',
-                                        },
-                                    },
-                                    y: {
-                                        beginAtZero: true,
-                                    },
-                                },
-                            },
-                        });
-
-                        // Doughnut chart for runs per trainer
-                        var ctxTrainer = document.getElementById('runsPerTrainerChart').getContext('2d');
-                        var runsPerTrainerChart = new Chart(ctxTrainer, {
-                            type: 'doughnut',
-                            data: {
-                                labels: trainerIds,
-                                datasets: [{
-                                    data: runCountsPerTrainer,
-                                    backgroundColor: [
-                                        'rgba(255, 99, 132, 0.5)',
-                                        'rgba(54, 162, 235, 0.5)',
-                                    ],
-                                }],
-                            },
-                            options: chartOptions,
-                        });
-
-                        // Bar chart for run status
-                        var ctxStatus = document.getElementById('runStatusChart').getContext('2d');
-                        var runStatusChart = new Chart(ctxStatus, {
-                            type: 'bar',
-                            data: {
-                                labels: runStatuses,
-                                datasets: [{
-                                    label: 'Run Count Per Status',
-                                    data: runCountsPerStatus,
-                                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                                    borderColor: 'rgba(255, 99, 132, 1)',
-                                    borderWidth: 1,
-                                }],
-                            },
-                            options: {
-                                ...chartOptions,
-                                scales: {
-                                    x: {
-                                        type: 'category', // Set the x-axis to category scale
-                                        title: {
-                                            display: true,
-                                            text: 'Run Status',
-                                        },
-                                    },
-                                    y: {
-                                        beginAtZero: true,
-                                        title: {
-                                            display: true,
-                                            text: 'Run Count',
-                                        },
-                                    },
-                                },
-                            },
-                        });
-                    });
-                </script>
             </div>
+
+            <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Chart data
+        var userTypes = {{ user_types | safe }};
+        var userTypeCounts = {{ user_type_counts | safe }};
+
+        var userDates = {{ user_dates | safe }};
+        var userDateCounts = {{ user_date_counts | safe }};
+
+        var dates = {{ dates | safe }};
+        var runCountsPerDate = {{ run_counts_per_date | safe }};
+
+        var trainerIds = {{ trainer_ids | safe }};
+        var runCountsPerTrainer = {{ run_counts_per_trainer | safe }};
+
+        var runStatuses = {{ run_statuses | safe }};
+        var runCountsPerStatus = {{ run_counts_per_status | safe }};
+
+        // Chart options
+        var chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+        };
+
+        // Initial chart configuration
+        var ctxDynamic = document.getElementById('dynamicChart').getContext('2d');
+        var dynamicChart = new Chart(ctxDynamic, {
+            type: 'line', // Default type
+            data: {
+                labels: dates,
+                datasets: [{
+                    label: 'Runs Per Date',
+                    data: runCountsPerDate,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderWidth: 2,
+                    fill: true,
+                }],
+            },
+            options: {
+                ...chartOptions,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Date',
+                        },
+                    },
+                    y: {
+                        beginAtZero: true,
+                    },
+                },
+            },
+        });
+
+        // Function to update the chart based on user selections
+        window.updateChart = function () {
+            var chartType = document.getElementById('chartTypeSelect').value;
+            var chartData = document.getElementById('chartDataSelect').value;
+
+            // Update chart type
+            dynamicChart.config.type = chartType;
+
+            // Update chart data
+            var selectedX, selectedY;
+
+            switch (chartData) {
+                case 'userType':
+                    selectedX = userTypes;
+                    selectedY = userTypeCounts;
+                    break;
+                case 'userDate':
+                    selectedX = userDates;
+                    selectedY = userDateCounts;
+                    break;
+                case 'runCountsPerDate':
+                    selectedX = dates;
+                    selectedY = runCountsPerDate;
+                    break;
+                case 'runsPerTrainer':
+                    selectedX = trainerIds;
+                    selectedY = runCountsPerTrainer;
+                    break;
+                case 'runStatus':
+                    selectedX = runStatuses;
+                    selectedY = runCountsPerStatus;
+                    break;
+                // Add other cases as needed
+            }
+
+            // Update chart data
+            dynamicChart.data.labels = selectedX;
+            dynamicChart.data.datasets[0].data = selectedY;
+
+            // Update chart options if needed
+
+            // Update the chart
+            dynamicChart.update();
+        };
+    });
+</script>
+
         </div>
-    {% endblock %}
+    </div>
+{% endblock %}
+
 
     <script type="text/javascript" src="{% static '/js/adminHome.js' %}"></script>
 </body>

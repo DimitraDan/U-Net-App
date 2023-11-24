@@ -6,7 +6,6 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-from django.shortcuts import render
 from django.urls import reverse
 from django.contrib.auth.hashers import make_password
 
@@ -14,6 +13,10 @@ from base.manageFolders import *
 from base.manageImages import *
 from base.predict import predict
 from base.train import training
+from django.shortcuts import render
+from django.db.models import Count
+from django.db.models.functions import TruncDate
+from base.models import CustomUser
 
 
 def download_csv_train_results(request, run_id):
@@ -114,14 +117,6 @@ def download_csv(request):
     return response
 
 
-# views.py
-
-from django.shortcuts import render
-from django.db.models import Count
-from django.db.models.functions import TruncDate
-from .models import CustomUser
-
-
 @login_required(login_url="/login/")
 @user_passes_test(lambda user: user.user_type == "1")
 def adminHome(request):
@@ -200,6 +195,7 @@ def adminHome(request):
     print(context)
     # Render the template with the context dictionary
     return render(request, 'Admin/adminHome.html', context)
+
 
 @login_required(login_url="/login/")
 @user_passes_test(lambda user: user.user_type == "1")
@@ -323,20 +319,22 @@ def trainEvaluated(request):
         dir_image = os.path.join(settings.MEDIA_ROOT, "image/run/")
         dir_mask = os.path.join(settings.MEDIA_ROOT, "mask/run/")
 
-        # try:
-        for index in selected_images_index:
-            image = request.POST.get("image" + index)
+        try:
+            for index in selected_images_index:
+                image = request.POST.get("image" + index)
 
-            if image.startswith("/media/image/runImage/"):
-                image = imageToStr(PIL_Image.open(os.getcwd() + image), 'png')
+                if image.startswith("/media/image/runImage/"):
+                    image = imageToStr(PIL_Image.open(os.getcwd() + image), 'png')
 
-            mask = request.POST.get("mask" + index)
+                mask = request.POST.get("mask" + index)
+                insertToFolder(dir_image, dir_mask, image, mask)
 
-            insertToFolder(dir_image, dir_mask, image, mask)
-
-        training(model_path=settings.MEDIA_ROOT + "/" + checkpoint_path, request=request)
-        # except Exception as e:
-        #     print(f"Error for object : {e}")
+            training(model_path=settings.MEDIA_ROOT + "/" + checkpoint_path, request=request)
+        except Exception as e:
+            print(f"Error for object : {e}")
+            messages.error(request, f"Failed to train model: {e} ")
+            run_id = request.POST.get("run_id")
+            return HttpResponseRedirect(reverse("updateRunProcess", kwargs={"run_id": run_id}))
 
         return HttpResponseRedirect("trainList")
 
@@ -490,11 +488,13 @@ def editUserSave(request):
         password = request.POST.get("password")
         username = request.POST.get("username")
         email = request.POST.get("email")
+        role = request.POST.get("user_type")
         is_active = request.POST.get("is_active")
 
         try:
             user = CustomUser.objects.get(id=user_id)
             user.username = username
+            user.user_type = role
             user.email = email
             user.is_active = is_active is not None
             user.password = make_password(password)

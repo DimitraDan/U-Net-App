@@ -3,7 +3,7 @@ from django.contrib.auth import login, logout
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from base.emailBackEnd import EmailBackEnd
-from base.models import CustomUser, Doctor
+from base.models import CustomUser
 
 
 def showLoginPage(request):
@@ -38,11 +38,6 @@ def doSignUp(request):
                 user_type=role
             )
             user.save()
-
-            if role == 2:
-                u = CustomUser.objects.get(email=email)
-                doctor = Doctor(user=u)
-                doctor.save()
 
             messages.success(request, "Successfully signed up")
             return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))

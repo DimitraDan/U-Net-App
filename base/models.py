@@ -1,12 +1,10 @@
-import os
-
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
 
 
 class CustomUser(AbstractUser):
-    user_type_data = ((1, "Admin"), (2, "Doctor"), (3, "Patient"))
+    user_type_data = ((1, "Admin"), (2, "Doctor"))
     user_type = models.CharField(default=1, choices=user_type_data, max_length=10)
     birthday = models.CharField(max_length=20)
 
@@ -87,19 +85,3 @@ class Run(models.Model):
         self.checkpoint.all().delete()
 
         super().delete(*args, **kwargs)
-
-
-class Patient(models.Model):
-    id = models.AutoField(primary_key=True)
-    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
-    image = models.ManyToManyField(MultipleImage)
-    treatment = models.CharField(max_length=300)
-    diagnosis = models.CharField(max_length=50)
-
-
-class Doctor(models.Model):
-    id = models.AutoField(primary_key=True)
-    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
-    specialisation = models.CharField(max_length=50, null=True)
-    experience = models.CharField(max_length=50, null=True)
-    patient = models.ManyToManyField(Patient)

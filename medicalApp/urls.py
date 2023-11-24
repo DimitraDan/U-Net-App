@@ -43,7 +43,6 @@ urlpatterns = [
     path('modifyDoctors', adminViews.modifyDoctors, name="modifyDoctors"),
     path('add_image', adminViews.addImage, name="add_image"),
     path('Segmentation', doctorViews.segmentation, name="segmentation"),
-    path('Patients', doctorViews.patients, name="patients"),
     path('delete_image/<str:image_id>', adminViews.deleteImage, name="delete_image"),
     path('delete_doctor/<str:doctor_id>', adminViews.deleteDoctor, name="delete_doctor"),
     path('editDoctor/<str:user_id>', adminViews.editUser, name="editUser"),

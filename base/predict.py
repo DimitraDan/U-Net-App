@@ -44,16 +44,25 @@ def mask_to_image(mask: np.ndarray, mask_values):
     return Image.fromarray(out)
 
 
-def predict(image, model_path='/base/MODEL.pth'):
+def predict(image, model_path='base/MODEL.pth'):
     net = UNet(n_channels=3, n_classes=2, bilinear=False)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     net.to(device=device)
-    state_dict = torch.load("base/MODEL.pth", map_location=device)
 
+    # Load the model state_dict
+    state_dict = torch.load(model_path, map_location=device)
+
+    # Check if "mask_values" is present in the state_dict
+    if 'mask_values' in state_dict:
+        mask_values = state_dict.pop('mask_values')
+    else:
+        # Provide a default value if "mask_values" is not present
+        mask_values = [0, 1]
+
+    # Load the UNet model state_dict
     net.load_state_dict(state_dict)
 
-    mask_values = state_dict.pop('mask_values', [0, 1])
-
+    # The rest of your code remains unchanged
     mask = predict_img(net=net,
                        full_img=image,
                        scale_factor=0.5,
@@ -63,3 +72,4 @@ def predict(image, model_path='/base/MODEL.pth'):
     result = mask_to_image(mask, mask_values)
 
     return result
+

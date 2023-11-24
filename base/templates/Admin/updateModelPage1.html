@@ -30,6 +30,7 @@
             </ul>
             <form id="msform" action="/train_evaluated" method="POST">
                 {% csrf_token %}
+                 <input type="hidden" name="run_id" value={{ run.id }}>
 
                 <fieldset>
                     <h2 class="fs-title">Step 1</h2>
@@ -43,6 +44,12 @@
                     <h3 style="padding-top: 50px" class="fs-subtitle">Choose run's name</h3>
                     <input type="text" name="name" id="runName">
                     <br>
+                    {% if messages %}
+                    {% for message in messages %}
+                    {{ message }}
+                    {% endfor %}
+                    {% endif %}
+                     <br>
 
                     <input type="button" name="next" class="next action-button" onclick="nextTab()"
                            value="Next"/>
