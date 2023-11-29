@@ -36,7 +36,7 @@ def segmentation(request):
         imagep = PIL_Image.open(file)
         mask = predict(imagep)
         imgAndMask = PIL_Image.composite(imagep.convert('RGBA'),
-                                               mask.convert('L').resize(imagep.size).convert('RGBA'), mask.convert('L'))
+        mask.convert('L').resize(imagep.size).convert('RGBA'), mask.convert('L'))
 
         context = {
             "imageAndMask": image_to_str(imgAndMask, format='PNG'),

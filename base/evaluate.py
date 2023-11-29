@@ -1,9 +1,10 @@
-import numpy as np
 import torch
 import torch.nn.functional as F
+from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from base.iou_score import multiclass_dice_coeff, dice_coeff
+from unet.unetModel import UNet
 
 
 @torch.inference_mode()
@@ -61,3 +62,23 @@ def evaluate(net, dataloader, device, amp):
 
     average_dice_score = sum(dice_scores) / max(len(dice_scores), 1)  # Calculate the average Dice score
     return images, masks, pred_mask_images, dice_scores, average_dice_score
+
+
+def eval_model(dataset, model_path='base/MODEL.pth'):
+    net = UNet(n_channels=3, n_classes=2, bilinear=False)
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    net.to(device=device)
+    state_dict = torch.load(model_path, map_location=device)
+
+    if 'mask_values' in state_dict:
+        mask_values = state_dict.pop('mask_values')
+    else:
+        mask_values = [0, 1]
+
+    loader_args = dict(batch_size=1, num_workers=2, pin_memory=True)
+    val_loader = DataLoader(dataset, shuffle=False, drop_last=True, **loader_args)
+
+    net.load_state_dict(state_dict)
+    images, masks, pred_mask_images, dice_scores, average_dice_score = evaluate(net, val_loader, device, True)
+
+    return average_dice_score

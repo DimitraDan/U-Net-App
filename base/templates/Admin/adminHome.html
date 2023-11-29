@@ -22,149 +22,149 @@
         </div>
 
         <div id="contentWrapper" style="padding-top: 300px;">
-            <h1>Statistics</h1>
-
-            <!-- Chart configuration table -->
-            <table id="chartConfigTable">
-                <tr>
-                    <td>Chart Type:</td>
-                    <td>
-                        <select id="chartTypeSelect">
-                            <option value="doughnut">Doughnut</option>
-                            <option value="line">Line</option>
-                            <option value="bar">Bar</option>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Data:</td>
-                    <td>
-                        <select id="chartDataSelect">
-                            <option value="userType">User Types</option>
-                            <option value="userDate">User Date Counts</option>
-                            <option value="runCountsPerDate">Runs Per Date</option>
-                            <option value="runsPerTrainer">Runs Per Trainer</option>
-                            <option value="runStatus">Run Status Counts</option>
-                            <!-- Add other data options as needed -->
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2">
-                        <button onclick="updateChart()">Update Chart</button>
-                    </td>
-                </tr>
-            </table>
-
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="chart-container">
-                        <canvas id="dynamicChart"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        // Chart data
-        var userTypes = {{ user_types | safe }};
-        var userTypeCounts = {{ user_type_counts | safe }};
-
-        var userDates = {{ user_dates | safe }};
-        var userDateCounts = {{ user_date_counts | safe }};
-
-        var dates = {{ dates | safe }};
-        var runCountsPerDate = {{ run_counts_per_date | safe }};
-
-        var trainerIds = {{ trainer_ids | safe }};
-        var runCountsPerTrainer = {{ run_counts_per_trainer | safe }};
-
-        var runStatuses = {{ run_statuses | safe }};
-        var runCountsPerStatus = {{ run_counts_per_status | safe }};
-
-        // Chart options
-        var chartOptions = {
-            responsive: true,
-            maintainAspectRatio: false,
-        };
-
-        // Initial chart configuration
-        var ctxDynamic = document.getElementById('dynamicChart').getContext('2d');
-        var dynamicChart = new Chart(ctxDynamic, {
-            type: 'line', // Default type
-            data: {
-                labels: dates,
-                datasets: [{
-                    label: 'Runs Per Date',
-                    data: runCountsPerDate,
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderWidth: 2,
-                    fill: true,
-                }],
-            },
-            options: {
-                ...chartOptions,
-                scales: {
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Date',
-                        },
-                    },
-                    y: {
-                        beginAtZero: true,
-                    },
-                },
-            },
-        });
-
-        // Function to update the chart based on user selections
-        window.updateChart = function () {
-            var chartType = document.getElementById('chartTypeSelect').value;
-            var chartData = document.getElementById('chartDataSelect').value;
-
-            // Update chart type
-            dynamicChart.config.type = chartType;
-
-            // Update chart data
-            var selectedX, selectedY;
-
-            switch (chartData) {
-                case 'userType':
-                    selectedX = userTypes;
-                    selectedY = userTypeCounts;
-                    break;
-                case 'userDate':
-                    selectedX = userDates;
-                    selectedY = userDateCounts;
-                    break;
-                case 'runCountsPerDate':
-                    selectedX = dates;
-                    selectedY = runCountsPerDate;
-                    break;
-                case 'runsPerTrainer':
-                    selectedX = trainerIds;
-                    selectedY = runCountsPerTrainer;
-                    break;
-                case 'runStatus':
-                    selectedX = runStatuses;
-                    selectedY = runCountsPerStatus;
-                    break;
-                // Add other cases as needed
-            }
-
-            // Update chart data
-            dynamicChart.data.labels = selectedX;
-            dynamicChart.data.datasets[0].data = selectedY;
-
-            // Update chart options if needed
-
-            // Update the chart
-            dynamicChart.update();
-        };
-    });
-</script>
+{#            <h1>Statistics</h1>#}
+{##}
+{#            <!-- Chart configuration table -->#}
+{#            <table id="chartConfigTable">#}
+{#                <tr>#}
+{#                    <td>Chart Type:</td>#}
+{#                    <td>#}
+{#                        <select id="chartTypeSelect">#}
+{#                            <option value="doughnut">Doughnut</option>#}
+{#                            <option value="line">Line</option>#}
+{#                            <option value="bar">Bar</option>#}
+{#                        </select>#}
+{#                    </td>#}
+{#                </tr>#}
+{#                <tr>#}
+{#                    <td>Data:</td>#}
+{#                    <td>#}
+{#                        <select id="chartDataSelect">#}
+{#                            <option value="userType">User Types</option>#}
+{#                            <option value="userDate">User Date Counts</option>#}
+{#                            <option value="runCountsPerDate">Runs Per Date</option>#}
+{#                            <option value="runsPerTrainer">Runs Per Trainer</option>#}
+{#                            <option value="runStatus">Run Status Counts</option>#}
+{#                            <!-- Add other data options as needed -->#}
+{#                        </select>#}
+{#                    </td>#}
+{#                </tr>#}
+{#                <tr>#}
+{#                    <td colspan="2">#}
+{#                        <button onclick="updateChart()">Update Chart</button>#}
+{#                    </td>#}
+{#                </tr>#}
+{#            </table>#}
+{##}
+{#            <div class="row">#}
+{#                <div class="col-md-12">#}
+{#                    <div class="chart-container">#}
+{#                        <canvas id="dynamicChart"></canvas>#}
+{#                    </div>#}
+{#                </div>#}
+{#            </div>#}
+{##}
+{#            <script>#}
+{#    document.addEventListener("DOMContentLoaded", function () {#}
+{#        // Chart data#}
+{#        var userTypes = {{ user_types | safe }};#}
+{#        var userTypeCounts = {{ user_type_counts | safe }};#}
+{##}
+{#        var userDates = {{ user_dates | safe }};#}
+{#        var userDateCounts = {{ user_date_counts | safe }};#}
+{##}
+{#        var dates = {{ dates | safe }};#}
+{#        var runCountsPerDate = {{ run_counts_per_date | safe }};#}
+{##}
+{#        var trainerIds = {{ trainer_ids | safe }};#}
+{#        var runCountsPerTrainer = {{ run_counts_per_trainer | safe }};#}
+{##}
+{#        var runStatuses = {{ run_statuses | safe }};#}
+{#        var runCountsPerStatus = {{ run_counts_per_status | safe }};#}
+{##}
+{#        // Chart options#}
+{#        var chartOptions = {#}
+{#            responsive: true,#}
+{#            maintainAspectRatio: false,#}
+{#        };#}
+{##}
+{#        // Initial chart configuration#}
+{#        var ctxDynamic = document.getElementById('dynamicChart').getContext('2d');#}
+{#        var dynamicChart = new Chart(ctxDynamic, {#}
+{#            type: 'line', // Default type#}
+{#            data: {#}
+{#                labels: dates,#}
+{#                datasets: [{#}
+{#                    label: 'Runs Per Date',#}
+{#                    data: runCountsPerDate,#}
+{#                    borderColor: 'rgba(75, 192, 192, 1)',#}
+{#                    backgroundColor: 'rgba(75, 192, 192, 0.2)',#}
+{#                    borderWidth: 2,#}
+{#                    fill: true,#}
+{#                }],#}
+{#            },#}
+{#            options: {#}
+{#                ...chartOptions,#}
+{#                scales: {#}
+{#                    x: {#}
+{#                        title: {#}
+{#                            display: true,#}
+{#                            text: 'Date',#}
+{#                        },#}
+{#                    },#}
+{#                    y: {#}
+{#                        beginAtZero: true,#}
+{#                    },#}
+{#                },#}
+{#            },#}
+{#        });#}
+{##}
+{#        // Function to update the chart based on user selections#}
+{#        window.updateChart = function () {#}
+{#            var chartType = document.getElementById('chartTypeSelect').value;#}
+{#            var chartData = document.getElementById('chartDataSelect').value;#}
+{##}
+{#            // Update chart type#}
+{#            dynamicChart.config.type = chartType;#}
+{##}
+{#            // Update chart data#}
+{#            var selectedX, selectedY;#}
+{##}
+{#            switch (chartData) {#}
+{#                case 'userType':#}
+{#                    selectedX = userTypes;#}
+{#                    selectedY = userTypeCounts;#}
+{#                    break;#}
+{#                case 'userDate':#}
+{#                    selectedX = userDates;#}
+{#                    selectedY = userDateCounts;#}
+{#                    break;#}
+{#                case 'runCountsPerDate':#}
+{#                    selectedX = dates;#}
+{#                    selectedY = runCountsPerDate;#}
+{#                    break;#}
+{#                case 'runsPerTrainer':#}
+{#                    selectedX = trainerIds;#}
+{#                    selectedY = runCountsPerTrainer;#}
+{#                    break;#}
+{#                case 'runStatus':#}
+{#                    selectedX = runStatuses;#}
+{#                    selectedY = runCountsPerStatus;#}
+{#                    break;#}
+{#                // Add other cases as needed#}
+{#            }#}
+{##}
+{#            // Update chart data#}
+{#            dynamicChart.data.labels = selectedX;#}
+{#            dynamicChart.data.datasets[0].data = selectedY;#}
+{##}
+{#            // Update chart options if needed#}
+{##}
+{#            // Update the chart#}
+{#            dynamicChart.update();#}
+{#        };#}
+{#    });#}
+{#</script>#}
 
         </div>
     </div>

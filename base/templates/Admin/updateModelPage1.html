@@ -64,7 +64,6 @@
                         <select id="section">
                             <option value="reportImages">Report Images</option>
                             <option value="trainImages">Train Images</option>
-                            <option value="testImages">Test Images</option>
                         </select>
                         <br>
                         <br>
@@ -109,21 +108,21 @@
                                     </label>
                                 </td>
                                 <td>
-                                    <img src="{{ item.image.url }}" alt="Image">
+                                    <img src="{{ item.images.url }}" alt="Image">
                                 </td>
                                 <td>
-                                    <img src="{{ item.mask.url }}" alt="Mask">
+                                    <img src="{{ item.masks.url }}" alt="Mask">
                                 </td>
                                 <td>
                                     {{ item.purpose }}
                                 </td>
                             </tr>
                         {% endfor %}
-                        {% for item in testImages %}
+                        {% for item in valTrainImages %}
                             <tr>
                                 <td>
                                     <label>
-                                        <input type="checkbox" name="testImagesStep2" value="{{ item.id }}">
+                                        <input type="checkbox" name="trainImagesStep2" value="{{ item.id }}">
                                     </label>
                                 </td>
                                 <td>

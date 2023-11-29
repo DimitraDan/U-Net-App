@@ -7,6 +7,8 @@ import base64
 import io
 from PIL import Image
 
+from medicalApp import settings
+
 
 def insertToFolder(folderImage, folderMask, image, mask):
     _, _, imageFiles = next(os.walk(folderImage))
@@ -26,7 +28,7 @@ def insertToFolder(folderImage, folderMask, image, mask):
             image_data += '='
         binary_img_data = base64.b64decode(image_data)  # Convert base64 to binary data
     elif image.endswith(('.jpeg', '.jpg', '.png')):
-        with open('./'+image, 'rb') as file:
+        with open('./' + image, 'rb') as file:
             binary_img_data = file.read()
     else:
         raise ValueError('Unsupported image format')
@@ -45,7 +47,7 @@ def insertToFolder(folderImage, folderMask, image, mask):
             mask_data += '='
         binary_mask_data = base64.b64decode(mask_data)  # Convert base64 to binary data
     elif mask.endswith(('.jpeg', '.jpg', '.png')):
-        with open('./'+mask, 'rb') as file:
+        with open('./' + mask, 'rb') as file:
             binary_mask_data = file.read()
     else:
         raise ValueError(f'Unsupported mask format for: {mask}')
@@ -59,6 +61,7 @@ def insertToFolder(folderImage, folderMask, image, mask):
 
     with open(seg_mask_filename, 'wb') as f:
         f.write(binary_mask_data)
+
 
 def find_dir_with_string(start_dir, search_string):
     for dirpath, dirnames, filenames in os.walk(start_dir):
@@ -85,3 +88,17 @@ def deleteFiles(folder):
                 shutil.rmtree(file_path)
         except Exception as e:
             print('Failed to delete %s. Reason: %s' % (file_path, e))
+
+
+def copy_images_and_masks(obj):
+    # Copy the image to a new location with a specific name
+    image_destination = os.path.join(
+        settings.MEDIA_ROOT, "image/run_eval/", f"{obj.id}.jpeg"
+    )
+    shutil.copyfile(os.path.join(settings.MEDIA_ROOT, obj.images.name), image_destination)
+
+    # Copy the mask to a new location with a specific name
+    mask_destination = os.path.join(
+        settings.MEDIA_ROOT, "mask/run_eval/", f"{obj.id}_Segmentation.png"
+    )
+    shutil.copyfile(os.path.join(settings.MEDIA_ROOT, obj.masks.name), mask_destination)

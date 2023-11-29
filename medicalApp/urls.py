@@ -21,6 +21,9 @@ from django.conf.urls.static import static
 from django.views.generic import View
 from django.http import HttpResponse
 
+from base.adminViews import evaluateModel
+
+
 class ImageServeView(View):
     def get(self, request, *args, **kwargs):
         image_path = kwargs.get('image_path')
@@ -32,6 +35,7 @@ class ImageServeView(View):
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.showLoginPage, name="showLoginPage"),
+    path('evaluate_model', evaluateModel, name="evaluateModel"),
     path('doLogin', views.doLogin, name="doLogin"),
     path('logout', views.logout, name="logout"),
     path('sign_up', views.showSignUpPage, name="signUp"),

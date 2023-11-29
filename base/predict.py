@@ -63,13 +63,8 @@ def predict(image, model_path='base/MODEL.pth'):
     net.load_state_dict(state_dict)
 
     # The rest of your code remains unchanged
-    mask = predict_img(net=net,
-                       full_img=image,
-                       scale_factor=0.5,
-                       out_threshold=0.5,
-                       device=device)
+    mask = predict_img(net=net, full_img=image, scale_factor=0.5, out_threshold=0.5, device=device)
 
     result = mask_to_image(mask, mask_values)
 
     return result
-
