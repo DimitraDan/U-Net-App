@@ -208,7 +208,6 @@ def training(model_path="base/MODEL.pth", request=None):
         state_dict.pop('mask_values')
         model.load_state_dict(state_dict)
 
-    deleteFiles(dir_checkpoint)
     run = Run.objects.create(status='RUNNING', trainer=request.user, name=request.POST.get("name"))
     try:
         train_model(

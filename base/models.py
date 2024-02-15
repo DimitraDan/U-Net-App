@@ -1,3 +1,5 @@
+import os
+
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
@@ -9,24 +11,29 @@ class CustomUser(AbstractUser):
     birthday = models.CharField(max_length=20)
 
 
-def upload_path_img(self, filename):
-    return f'image/{self.purpose}/{filename}'
+def upload_path_img(instance, filename):
+    return f'image/{instance.purpose}/{filename}'
 
 
-def upload_path_mask(self, filename):
-    return f'mask/{self.purpose}/{filename}'
+def upload_path_mask(instance, filename):
+    return f'mask/{instance.purpose}/{filename}'
 
 
-def upload_path_true_mask(self, filename):
+def upload_path_true_mask(instance, filename):
     return f'mask/trueMask/{filename}'
 
 
-def upload_path_pred_mask(self, filename):
+def upload_path_pred_mask(instance, filename):
     return f'mask/predMask/{filename}'
 
 
-def upload_path_run_image(self, filename):
+def upload_path_run_image(instance, filename):
     return f'image/runImage/{filename}'
+
+
+def create_directory_if_not_exists(directory):
+    if not os.path.exists(directory):
+        os.makedirs(directory)
 
 
 class MultipleImage(models.Model):
@@ -36,6 +43,14 @@ class MultipleImage(models.Model):
     purpose = models.CharField(max_length=20)
     postedBy = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     date = models.DateField(default=timezone.now)
+
+    def save(self, *args, **kwargs):
+        create_directory_if_not_exists(os.path.join('media', 'image', self.purpose))
+        create_directory_if_not_exists(os.path.join('media', 'mask', self.purpose))
+        create_directory_if_not_exists(os.path.join('media', 'mask', 'trueMask'))
+        create_directory_if_not_exists(os.path.join('media', 'mask', 'predMask'))
+        create_directory_if_not_exists(os.path.join('media', 'image', 'runImage'))
+        super(MultipleImage, self).save(*args, **kwargs)
 
 
 class AverageTrainLoss(models.Model):

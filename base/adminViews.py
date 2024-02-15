@@ -5,8 +5,6 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.hashers import make_password
-from django.db.models import Count
-from django.db.models.functions import TruncDate
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
@@ -117,72 +115,7 @@ def download_csv(request):
 @login_required(login_url="/login/")
 @user_passes_test(lambda user: user.user_type == "1")
 def adminHome(request):
-    user_type_counts_statistics = CustomUser.objects.values('user_type').annotate(user_type_count=Count('id'))
-    # Truncate date to get only the date part
-    user_date_joined_counts_statistics = CustomUser.objects.annotate(
-        date_joined_formatted=TruncDate('date_joined')).values('date_joined_formatted').annotate(
-        user_date_count=Count('id'))
-
-    # Initialize empty lists to store the user types and counts
-    user_types = []
-    user_type_counts = []
-
-    user_dates = []
-    user_date_counts = []
-
-    # Loop through the queryset and extract the user types and counts
-    for row in user_type_counts_statistics:
-        user_types.append(row['user_type'])
-        user_type_counts.append(row['user_type_count'])
-
-    for row in user_date_joined_counts_statistics:
-        user_dates.append(row['date_joined_formatted'].strftime('%Y-%m-%d'))  # Convert to string
-        user_date_counts.append(row['user_date_count'])
-
-    runs_per_date_statistics = Run.objects.values('date').annotate(run_count=Count('id'))
-    runs_per_trainer_statistics = Run.objects.values('trainer_id').annotate(run_count=Count('id'))
-
-    # Initialize empty lists to store the results
-    dates = []
-    run_counts_per_date = []
-
-    trainer_ids = []
-    run_counts_per_trainer = []
-
-    # Loop through the queryset and extract the results
-    for row in runs_per_date_statistics:
-        dates.append(row['date'].strftime('%Y-%m-%d'))
-        run_counts_per_date.append(row['run_count'])
-
-    for row in runs_per_trainer_statistics:
-        trainer_ids.append(row['trainer_id'])
-        run_counts_per_trainer.append(row['run_count'])
-
-        runs_per_date_statistics = Run.objects.values('date').annotate(run_count=Count('id'))
-        run_status_statistics = Run.objects.values('status').annotate(run_count=Count('id'))
-
-        dates = []
-        run_counts_per_date = []
-
-        run_statuses = []
-        run_counts_per_status = []
-
-        for row in runs_per_date_statistics:
-            dates.append(row['date'].strftime('%Y-%m-%d'))
-            run_counts_per_date.append(row['run_count'])
-
-        for row in run_status_statistics:
-            run_statuses.append(row['status'])
-            run_counts_per_status.append(row['run_count'])
-
-    # Pass the user types and counts to the context dictionary
-    context = {'user_types': user_types, 'user_type_counts': user_type_counts, 'user_dates': user_dates,
-        'user_date_counts': user_date_counts, 'dates': dates, 'run_counts_per_date': run_counts_per_date,
-        'trainer_ids': trainer_ids, 'run_counts_per_trainer': run_counts_per_trainer, 'run_statuses': run_statuses,
-        'run_counts_per_status': run_counts_per_status, }
-
-    # Render the template with the context dictionary
-    return render(request, 'Admin/adminHome.html', context)
+    return render(request, 'Admin/adminHome.html')
 
 
 @login_required(login_url="/login/")
@@ -269,10 +202,10 @@ def updateRunProcess(request, run_id):
 
     for image in validationRunImages:
         val_train_images.append({"images": image.image, "id": image.id, "masks": image.pred_mask,
-            "purpose": f"train image, used on evaluation round dice score: {image.validation_score}"})
+                                 "purpose": f"train image, used on evaluation round dice score: {image.validation_score}"})
 
     content = {"run": run, "checkpoints": checkpoints, "reportImages": reportImages, "trainImages": trainImages,
-        "valTrainImages": val_train_images}
+               "valTrainImages": val_train_images}
     return render(request, "Admin/updateModelPage1.html", content)
 
 
@@ -284,16 +217,24 @@ def trainSelected(request):
 
         objs = MultipleImage.objects.filter(id__in=selected_images)
         try:
+            run_image_directory = os.path.join(settings.MEDIA_ROOT, "image/run")
+            run_mask_directory = os.path.join(settings.MEDIA_ROOT, "mask/run")
+
+            os.makedirs(run_image_directory, exist_ok=True)
+            os.makedirs(run_mask_directory, exist_ok=True)
+
             for obj in objs:
-                shutil.copyfile(os.path.join(settings.MEDIA_ROOT, obj.images.name),
-                    (os.path.join(settings.MEDIA_ROOT + "/image/run/", str(obj.id) + ".jpeg", )), )
-                shutil.copyfile(os.path.join(settings.MEDIA_ROOT, obj.masks.name),
-                    (os.path.join(settings.MEDIA_ROOT + "/mask/run/", str(obj.id) + "_Segmentation.png", )), )
+                # Copy images to the "run" directory
+                image_dest_path = os.path.join(run_image_directory, f"{obj.id}.jpeg")
+                shutil.copyfile(os.path.join(settings.MEDIA_ROOT, obj.images.name), image_dest_path)
+
+                # Copy masks to the "run" directory
+                mask_dest_path = os.path.join(run_mask_directory, f"{obj.id}_Segmentation.png")
+                shutil.copyfile(os.path.join(settings.MEDIA_ROOT, obj.masks.name), mask_dest_path)
 
             training(request=request)
         except Exception as e:
-            print(f"Error for object : {e}")
-
+            print(f"Error for object: {e}")
         return HttpResponseRedirect("trainList")
 
 
@@ -414,9 +355,9 @@ def modifyImages(request):
     images = MultipleImage.objects.all().order_by("date")
 
     content = {"trainCount": MultipleImage.objects.filter(purpose="train").count(),
-        "testCount": MultipleImage.objects.filter(purpose="test").count(),
-        "reportCount": MultipleImage.objects.filter(purpose="report").count(),
-        "evaluateCount": MultipleImage.objects.filter(purpose="evaluate").count(), "images": images, }
+               "testCount": MultipleImage.objects.filter(purpose="test").count(),
+               "reportCount": MultipleImage.objects.filter(purpose="report").count(),
+               "evaluateCount": MultipleImage.objects.filter(purpose="evaluate").count(), "images": images, }
     return render(request, "Admin/modifyImages.html", content)
 
 
@@ -505,7 +446,7 @@ def addImage(request):
         try:
             for (image, mask) in zip(imageFiles, maskFiles):
                 MultipleImage.objects.create(images=convert_image(image, "JPEG"), masks=convert_image(mask, "PNG"),
-                    purpose=purpose, postedBy=request.user, )
+                                             purpose=purpose, postedBy=request.user)
 
             messages.success(request, "Successfully Added images")
             return HttpResponseRedirect(reverse("modifyImages"))
