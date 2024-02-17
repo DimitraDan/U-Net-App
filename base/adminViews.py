@@ -294,12 +294,12 @@ def predictMask(request):
             evaluation.append({"image": image.images.url, "prediction": image.masks.url})
 
         for train_id in trainImagesId:
-            image = Validation.objects.get(id=train_id)
-            evaluation.append({"image": image.image.url, "prediction": image.pred_mask.url})
+            image = MultipleImage.objects.get(id=train_id)
+            evaluation.append({"image": image.images.url, "prediction": image.masks.url})
 
         for test_id in testImagesId:
-            image = MultipleImage.objects.get(id=test_id)
-            evaluation.append({"image": image.images.url, "prediction": image.masks.url})
+            image = Validation.objects.get(id=test_id)
+            evaluation.append({"image": image.image.url, "prediction": image.pred_mask.url})
 
         context = {"evaluation": evaluation, "checkpoint": checkpoint}
 

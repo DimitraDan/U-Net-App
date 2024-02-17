@@ -33,12 +33,30 @@ def arrayTo64Mask(img):
     return img
 
 
-def base64_file(data, name=None):
-    _format, _img_str = data.split(';base64,')
+def base64_file(data, name=None, mask=False):
+    split_data = data.split(';base64,')
+    if len(split_data) == 2:
+        _format, _img_str = split_data
+    else:
+        raise ValueError('Invalid base64 data format')
+
     _name, ext = _format.split('/')
     if not name:
         name = _name.split(":")[-1]
-    return ContentFile(base64.b64decode(_img_str), name='{}.{}'.format(name, ext))
+
+    decoded_data = base64.b64decode(_img_str)
+
+    if mask:
+        img_array = np.frombuffer(decoded_data, np.uint8)
+        img = PIL_Image.open(io.BytesIO(img_array))
+
+        if img.mode != 'L':
+            # Convert to 'L' mode if not already in grayscale
+            img = img.convert('L')
+
+        decoded_data = img.tobytes()
+
+    return ContentFile(decoded_data, name='{}.{}'.format(name, ext))
 
 
 def imageToStr(img, format='jpeg'):

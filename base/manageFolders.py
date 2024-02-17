@@ -1,13 +1,12 @@
 import shutil
 import cv2
-import numpy as np
-
-import os
-import base64
-import io
-from PIL import Image
+from django.core.files.base import ContentFile
+from base.manageImages import base64_file, convert_image
 
 from medicalApp import settings
+import os
+import base64
+import numpy as np
 
 
 def insertToFolder(folderImage, folderMask, image, mask):
@@ -15,52 +14,32 @@ def insertToFolder(folderImage, folderMask, image, mask):
     _, _, maskFiles = next(os.walk(folderMask))
 
     # Handle the image input
-    if image.startswith('data:image/jpeg;base64,'):
-        image_data = image.split(',', 1)[1]  # Extract base64 data
-        # Add padding if missing
-        while len(image_data) % 4 != 0:
-            image_data += '='
-        binary_img_data = base64.b64decode(image_data)  # Convert base64 to binary data
-    elif image.startswith('data:image/png;base64,'):
-        image_data = image.split(',', 1)[1]  # Extract base64 data
-        # Add padding if missing
-        while len(image_data) % 4 != 0:
-            image_data += '='
-        binary_img_data = base64.b64decode(image_data)  # Convert base64 to binary data
+    if image.startswith('data:image/jpeg;base64,') or image.startswith('data:image/png;base64,'):
+        binary_img_data = base64_file(image, name=f'{len(imageFiles)}')
     elif image.endswith(('.jpeg', '.jpg', '.png')):
         with open('./' + image, 'rb') as file:
-            binary_img_data = file.read()
+            binary_img_data = ContentFile(file.read(), name=f'{len(imageFiles)}.jpeg')
     else:
         raise ValueError('Unsupported image format')
 
     # Handle the mask input
-    if mask.startswith('data:image/jpeg;base64,'):
-        mask_data = mask.split(',', 1)[1]  # Extract base64 data
-        # Add padding if missing
-        while len(mask_data) % 4 != 0:
-            mask_data += '='
-        binary_mask_data = base64.b64decode(mask_data)  # Convert base64 to binary data
-    elif mask.startswith('data:image/png;base64,'):
-        mask_data = mask.split(',', 1)[1]  # Extract base64 data
-        # Add padding if missing
-        while len(mask_data) % 4 != 0:
-            mask_data += '='
-        binary_mask_data = base64.b64decode(mask_data)  # Convert base64 to binary data
+    if mask.startswith('data:image/jpeg;base64,') or mask.startswith('data:image/png;base64,'):
+        binary_mask_data = convert_image(base64_file(mask, name=f'{len(maskFiles)}_Segmentation'), 'PNG')
     elif mask.endswith(('.jpeg', '.jpg', '.png')):
         with open('./' + mask, 'rb') as file:
-            binary_mask_data = file.read()
+            binary_mask_data = ContentFile(file.read(), name=f'{len(maskFiles)}_Segmentation.png')
     else:
         raise ValueError(f'Unsupported mask format for: {mask}')
 
     # Save the image and mask files to their respective folders
-    img_filename = os.path.join(folderImage, str(len(imageFiles)) + '.jpeg')
-    seg_mask_filename = os.path.join(folderMask, str(len(maskFiles)) + '_Segmentation' + '.png')
+    img_filename = os.path.join(folderImage, binary_img_data.name)
+    seg_mask_filename = os.path.join(folderMask, binary_mask_data.name)
 
     with open(img_filename, 'wb') as f:
-        f.write(binary_img_data)
+        f.write(binary_img_data.read())
 
     with open(seg_mask_filename, 'wb') as f:
-        f.write(binary_mask_data)
+        f.write(binary_mask_data.read())
 
 
 def find_dir_with_string(start_dir, search_string):
